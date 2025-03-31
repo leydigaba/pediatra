@@ -17,25 +17,22 @@ class Configuracion:
             if not hasattr(web.ctx, 'session') or not web.ctx.session.get('usuario'):
                 print("🚫 No hay usuario en sesión. Redirigiendo a /iniciosesion...")
                 raise web.seeother('/iniciosesion')
-            
-            usuario_id = web.ctx.session.usuario.get('id')
-            print(f"🆔 ID del usuario en sesión: {usuario_id}")
-            
+
+            correo_usuario = web.ctx.session.get('correo')
+            print(f"🆔 Correo del usuario en sesión: {correo_usuario}")
+
             p = Personas()
-            datos_pediatra = p.obtener_pediatra(usuario_id)
-            
+            datos_pediatra = p.obtener_pediatra(correo_usuario)
+
             if not datos_pediatra:
-                print(f"⚠️ No se encontraron datos para el usuario ID: {usuario_id}")
-                datos_pediatra = {"id": usuario_id}
-            
-            if hasattr(datos_pediatra, 'items'):
-                datos_pediatra = dict(datos_pediatra)
-            
+                print(f"⚠️ No se encontraron datos para el usuario con correo: {correo_usuario}")
+                datos_pediatra = {"correo": correo_usuario}
+
             mensaje_actual = mensaje
             mensaje = None
-            
+
             return render.configuracion(datos_pediatra, mensaje=mensaje_actual)
-            
+
         except web.seeother as redireccion:
             raise redireccion
         except Exception as error:
@@ -50,28 +47,26 @@ class ActualizarConfiguracion:
                 raise web.seeother('/iniciosesion')
             
             formulario = web.input()
-            usuario_id = web.ctx.session.usuario.get('id')
+            correo_usuario = web.ctx.session.get('correo')
             
-            if not formulario.get('nombres') or not formulario.get('primer_apellido'):
+            if not formulario.get('nombre') or not formulario.get('primer_apellido'):
                 mensaje = "Error: Faltan campos obligatorios."
                 raise web.seeother('/configuracion')
             
             datos_actualizar = {
-                'nombres': formulario.get('nombres'),
+                'nombre': formulario.get('nombre'),
                 'primer_apellido': formulario.get('primer_apellido'),
                 'segundo_apellido': formulario.get('segundo_apellido', ''),
                 'nacimiento': formulario.get('nacimiento', ''),
-                'licencia': formulario.get('licencia', '')
+                'licencia': formulario.get('licencia', ''),
+                'correo': correo_usuario
             }
             
             p = Personas()
-            resultado = p.actualizar_pediatra(usuario_id, datos_actualizar)
+            resultado = p.actualizar_pediatra(correo_usuario, datos_actualizar)
             
             if resultado:
-                datos_actualizados = p.obtener_pediatra(usuario_id)
-                if datos_actualizados and hasattr(datos_actualizados, 'items'):
-                    datos_actualizados = dict(datos_actualizados)
-                
+                datos_actualizados = p.obtener_pediatra(correo_usuario)
                 if datos_actualizados:
                     web.ctx.session.usuario = datos_actualizados
                 else:
@@ -103,13 +98,13 @@ class ActualizarFoto:
                 mensaje = "Error: No se seleccionó ninguna imagen."
                 raise web.seeother('/configuracion')
             
-            usuario_id = web.ctx.session.usuario.get('id')
+            correo_usuario = web.ctx.session.get('correo')
             
             p = Personas()
-            url_foto = p.subir_foto_perfil(usuario_id, formulario['foto'])
+            url_foto = p.subir_foto_perfil(correo_usuario, formulario['foto'])
             
             if url_foto:
-                web.ctx.session.usuario['fotoperfil'] = url_foto
+                web.ctx.session.usuario['foto_perfil'] = url_foto
                 mensaje = "¡Foto de perfil actualizada correctamente!"
             else:
                 mensaje = "No se pudo actualizar la foto de perfil."

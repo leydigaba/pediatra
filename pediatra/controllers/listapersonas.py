@@ -11,7 +11,7 @@ class ListaPersonas:
                 raise web.seeother('/iniciosesion')
             
             print(f"🔍 Sesión actual: {session.get('usuario')}")
-            
+        
             usuario = session.get('usuario')
             if usuario.get('rol') != 'pedia':
                 print("🚫 Acceso denegado. Solo los pediatras pueden ver esta lista.")
@@ -21,11 +21,20 @@ class ListaPersonas:
             p = Personas()
             pacientes = p.lista_pacientes(correo_pediatra)
             
-           
-            if isinstance(pacientes):
-                return render.lista_personas([])
+            # Transformar los datos para que coincidan con la plantilla
+            pacientes_formateados = []
+            for p in pacientes:
+                pacientes_formateados.append({
+                    'id': p['ID'], 
+                    'nombre': p['Nombre'],
+                    'primer_apellido': p['Apellido(s)'].split()[0] if p['Apellido(s)'] and ' ' in p['Apellido(s)'] else p['Apellido(s)'],
+                    'segundo_apellido': p['Apellido(s)'].split()[1] if p['Apellido(s)'] and ' ' in p['Apellido(s)'] else '',
+                    'edad': p['Edad'],
+                    'genero': p['Género'].lower(),
+                    'estado': 'activo'  # Por defecto
+                })
                 
-            return render.lista_personas(pacientes)
+            return render.lista_personas(pacientes_formateados)
             
         except web.seeother as redireccion:
             raise redireccion

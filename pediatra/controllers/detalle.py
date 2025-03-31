@@ -8,26 +8,42 @@ from models.pediatras import Personas
 render = web.template.render("views/")
 
 class DetalleUsuario:
-    def GET(self, paciente_id):
-        try:
+    def GET(self, persona_id):
             session = web.ctx.session
             if not session.get('usuario'):
                 print("🚫 No hay usuario en sesión. Redirigiendo a /iniciosesion...")
                 raise web.seeother('/iniciosesion')
 
-            correo_pediatra = session.get('usuario').get('correo')
-            personas = Personas()
-            paciente = personas.lista_pacientes_por_id_y_pediatra(paciente_id,correo_pediatra)
-            print("Paciente obtenido:", paciente)
-            
-            # Verificar si el paciente existe
-            if paciente and paciente.get(paciente_id):
-         
-                return render.detalle_personas(paciente)  # Mostrar los detalles del paciente
-            else:
-                return "No tienes acceso a este paciente"
-        except web.seeother as redireccion:
-            raise redireccion
+            usuario = session.get('usuario')
+            if usuario.get('rol') != 'pedia':
+                    print("🚫 Acceso denegado. Solo los pediatras pueden ver esta lista.")
+                    raise web.seeother('/')
+                
+            correo_pediatra = usuario.get('correo')
+            #print("🌟 ID recibido en la URL: ", persona_id)  # <-- Verificamos si el ID llega bien
+            #print(f"🔍 Correo pediatra: {correo_pediatra}")
+            if not persona_id:
+                return "⚠️ Error: No se recibió un ID válido."
+
+
+            try:
+                p = Personas()
+                datos_persona = p.obtener_bebe_por_id(persona_id, correo_pediatra)
+                #web.debug(f"🔍 Datos obtenidos: {datos_persona}")  # Para verificar estructura
+                #print("🔍 Datos obtenidos: ", datos_persona)  # Para verificar estructura
+                # Extraemos el paciente del diccionario
+                paciente = datos_persona.get(persona_id, None)
+                #web.debug(f"✅ Paciente seleccionado: {paciente}")  # Para verificar
+                #print(f"✅ Paciente seleccionado: {paciente}")  # Para verificar
+                
+                if paciente:
+                    return render.detallepersonas(datos_persona)
+                else:
+                    return "❌ Persona no encontrada."
+
+            except Exception as e:
+                #web.debug(f"💥 Error en DetallePersonas: {str(e)}")  # <-- Esto muestra cualquier error
+                return f"⚠️ Error interno del servidor: {str(e)}"
 
     def POST(self, paciente_id):
         print(f"POST iniciado con paciente_id: '{paciente_id}'")
@@ -46,16 +62,17 @@ class DetalleUsuario:
             )
             correo_pediatra = session.get('usuario').get('correo')
             personas = Personas()
-            
-            paciente = personas.lista_pacientes_por_id_y_pediatra(paciente_id, correo_pediatra)
+            print(f"Correo pediatra: {correo_pediatra}")
+            paciente = personas.obtener_bebe_por_id(paciente_id, correo_pediatra)
             if not paciente or not paciente.get(paciente_id):
                 return json.dumps({"error": "No tienes acceso a este paciente"})
-            
+            print(f"Paciente encontrado: {paciente}")
+
             # Separar la actualización de datos y documentos
             datos_actualizar = {
-                      'nombre': datos.get('nombre'),
-                    'primer_apellido': datos.get('apellido1'),
-                    'segundo_apellido': datos.get('apellido2'),
+                    'nombre': datos.get('nombre'),
+                    'primer_apellido': datos.get('primer_apellido'),
+                    'segundo_apellido': datos.get('segundo_apellido'),
                     'fecha_nacimiento': datos.get('fecha_nacimiento'),
                     'edad': datos.get('edad'),
                     'curp': datos.get('curp'),
@@ -68,27 +85,26 @@ class DetalleUsuario:
                     'talla': datos.get('talla'),
                     'perimetro_cefalico': datos.get('perimetro_cefalico'),
                     'grupo_sanguineo': datos.get('grupo_sanguineo'),
-                    'antecedente_neonatal_si': datos.get('antecedente_neonatal_si'),
-                    'antecedente_neonatal_no': datos.get('antecedente_neonatal_no'),
+                    'antecedente_neonatal': datos.get('antecedente_neonatal'),
+                    
                     'edad_neonatal_semanas': datos.get('edad_neonatal_semanas'),
                     'edad_neonatal_dias': datos.get('edad_neonatal_dias'),
                     'peso_datos': datos.get('peso_datos'),
                     'talla_datos': datos.get('talla_datos'),
-                    'patologias_si': datos.get('patologias_si'),
-                    'patologias_no': datos.get('patologias_no'),
+                    'patologias': datos.get('patologias'),
+            
                     'gestas': datos.get('gestas'),
                     'abortos': datos.get('abortos'),
                     'partos': datos.get('partos'),
                     'cesareas': datos.get('cesareas'),
                     'normal': datos.get('normal'),
                     'riesgo': datos.get('riesgo'), 
-                    'alto_riesgo': datos.get('alto_riesgo'),
                     'terminacion': datos.get('terminacion')
             }
             
             # Remover claves vacías
             datos_actualizar = {k: v for k, v in datos_actualizar.items() if v}
-            
+            print(f"Datos a actualizar: {datos_actualizar}")
             # Actualizar datos del paciente
             if datos_actualizar:
                 resultado = personas.actualizar_paciente(paciente_id, datos_actualizar)

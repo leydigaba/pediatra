@@ -96,17 +96,17 @@ class Personas:
                 print("❌ Error: No hay usuarios en la base de datos.")
                 return "No hay usuarios en la base de datos."
             
-            print(f"🗂️ Usuarios en la base de datos encontrados")
+            #print(f"🗂️ Usuarios en la base de datos encontrados")
 
             # Buscar al pediatra en la base de datos
             pediatra_id = None
             pediatra_data = None
             
-            print(f"📧 Buscando pediatra con correo: {correo_pediatra}")
+            #print(f"📧 Buscando pediatra con correo: {correo_pediatra}")
             
             for user_id, datos in usuarios.items():
                 if datos.get("correo", "").strip().lower() == correo_pediatra.strip().lower() and datos.get("rol") == "pedia":
-                    print(f"✅ Pediatra encontrado: {user_id}")
+                    #print(f"✅ Pediatra encontrado: {user_id}")
                     pediatra_id = user_id
                     pediatra_data = datos
                     break
@@ -118,7 +118,7 @@ class Personas:
             # Obtener bebés vinculados al pediatra
             bebes_vinculados = pediatra_data.get("bebesvinculados", {})
             
-            print(f"👶 Bebés vinculados encontrados: {bebes_vinculados}")
+            #print(f"👶 Bebés vinculados encontrados: {bebes_vinculados}")
 
             if not bebes_vinculados:
                 print("⚠️ No hay bebés vinculados a este pediatra.")
@@ -136,10 +136,11 @@ class Personas:
                     "Teléfono": bebe_info.get("telefono", "Desconocido"),
                     "Nombre madre": bebe_info.get("nombre_madre", "Desconocido"),
                     "Nombre padre": bebe_info.get("nombre_padre", "Desconocido"),
+                    "oms": bebe_info.get("oms", ""),
                 }
                 pacientes.append(paciente)
 
-            print(f"📊 Total de pacientes encontrados: {len(pacientes)}")
+            #print(f"📊 Total de pacientes encontrados: {len(pacientes)}")
             return pacientes
         
         except Exception as e:
@@ -175,29 +176,37 @@ class Personas:
 
 
 
-    def lista_pacientes_por_id_y_pediatra(self, paciente_id=None, pediatra_email=None):
-
+    def obtener_bebe_por_id(self, bebe_id, correo_pediatra):
+        """
+        Función para obtener información de un bebé específico
+        """
         try:
-            datos = self.db.child("usuarios").get()
-            todos_usuarios = datos.val() if datos.val() else {}
-
-            pacientes_filtrados = {}
-
-            for id_usuario, usuario in todos_usuarios.items():
-                if usuario.get("rol") == "pediatra" and pediatra_email == usuario.get("email"):
-                    bebes_vinculados = usuario.get("bebesvinculados", {})
-                    for bebe_id, _ in bebes_vinculados.items():
-                        bebe = self.db.child("usuarios").child(bebe_id).get()
-                        if bebe.val():
-                            # Filtrar por paciente_id si se proporciona
-                            if paciente_id and paciente_id == bebe_id:
-                                pacientes_filtrados[bebe_id] = bebe.val()
-
-            return pacientes_filtrados
-        except Exception as e:
-            print(f"Error al listar pacientes: {str(e)}")
+            # Encontrar el ID del pediatra basado en su correo
+            usuarios = self.db.child("usuarios").get()
+            pediatra_uid = None
+            
+            if usuarios.val():
+                for uid, datos in usuarios.val().items():
+                    if datos.get('correo') == correo_pediatra:
+                        pediatra_uid = uid
+                        break
+            
+            if not pediatra_uid:
+                return {}
+            
+            # Obtener directamente los datos del bebé desde bebesvinculados del pediatra
+            bebes_vinculados = self.db.child("usuarios").child(pediatra_uid).child("bebesvinculados").get()
+            
+            if bebes_vinculados.val() and bebe_id in bebes_vinculados.val():
+                # Los datos del bebé ya están aquí, no necesitamos buscar en otro lugar
+                return {bebe_id: bebes_vinculados.val()[bebe_id]}
+                
             return {}
-
+        except Exception as e:
+            return {}
+        
+        
+    
     def vincular_bebe_a_pediatra(self, pediatra_id, bebe_id):
 
         try:
@@ -247,47 +256,57 @@ class Personas:
 
 
     def obtener_pediatra(self, correo):
+
         try:
             correo_key = correo.replace(".", ",")
-            usuarios = self.db.child("usuarios").get()
-            
-            if usuarios.each():
-                for usuario in usuarios.each():
-                    datos = usuario.val()
-                    if datos.get("correo") == correo and datos.get("rol") == "pedia":
-                        return datos
-            
+            datos = self.db.child("usuarios").child(correo_key).get()
+
+            if datos.val() and datos.val().get("rol") == "pediatra":
+                return datos.val()
             return None
         except Exception as e:
             print(f"Error al obtener pediatra: {str(e)}")
             return None
 
+
     def actualizar_pediatra(self, correo, datos):
         try:
+            # En Firebase, el punto (.) no está permitido en las claves, así que lo reemplazamos por coma (,)
             correo_key = correo.replace(".", ",")
-            usuarios = self.db.child("usuarios").get()
             
-            if usuarios.each():
-                for usuario in usuarios.each():
-                    if usuario.val().get("correo") == correo and usuario.val().get("rol") == "pedia":
-                        user_id = usuario.key()
-                        self.db.child("usuarios").child(user_id).update(datos)
-                        return True
+            # En Firebase, podemos actualizar solo los campos específicos
+            self.db.child("usuarios").child(correo_key).update(datos)
             
-            return False
+            return True
         except Exception as e:
             print(f"Error al actualizar pediatra: {str(e)}")
             return False
 
     def actualizar_paciente(self, paciente_id, datos_actualizar):
         try:
-            self.db.child("pacientes").child(paciente_id).update(datos_actualizar)
+            # Primero, necesitamos encontrar al pediatra que tiene vinculado este paciente
+            usuarios = self.db.child("usuarios").get().val()
+            pediatra_uid = None
+            
+            # Buscar al pediatra que tiene este bebé vinculado
+            for uid, datos in usuarios.items():
+                if (datos.get("rol") == "pedia" and 
+                    datos.get("bebesvinculados") and 
+                    paciente_id in datos.get("bebesvinculados")):
+                    pediatra_uid = uid
+                    break
+            
+            if not pediatra_uid:
+                print(f"No se encontró un pediatra vinculado al paciente {paciente_id}")
+                return False
+                
+            # Actualizar los datos del bebé en la ubicación correcta
+            self.db.child("usuarios").child(pediatra_uid).child("bebesvinculados").child(paciente_id).update(datos_actualizar)
             print(f"Datos actualizados para el paciente {paciente_id}: {datos_actualizar}")
             return True
         except Exception as e:
             print(f"Error al actualizar paciente: {str(e)}")
             return False
-
 
     def actualizar_foto_paciente(self, paciente_id, ruta_foto):
         try:
@@ -343,38 +362,41 @@ class Personas:
         
     def actualizar_foto_bebe(self, paciente_id, archivo):
         try:
-            # Generar un nombre de archivo único
+            # Encontrar el pediatra vinculado al paciente
+            usuarios = self.db.child("usuarios").get().val()
+            pediatra_uid = None
+            
+            for uid, datos in usuarios.items():
+                if (datos.get("rol") == "pedia" and 
+                    datos.get("bebesvinculados") and 
+                    paciente_id in datos.get("bebesvinculados")):
+                    pediatra_uid = uid
+                    break
+            
+            if not pediatra_uid:
+                print(f"No se encontró un pediatra vinculado al paciente {paciente_id}")
+                return None
+                
+            # Procesamiento del archivo y guardado
             extension = os.path.splitext(archivo.filename)[1]
             nombre_archivo = f"{paciente_id}{uuid.uuid4()}{extension}"
             
-            # Ruta donde se guardará la foto
             ruta_local = os.path.join('static', 'uploads', 'bebes', nombre_archivo)
             ruta_storage = f"bebes/{nombre_archivo}"
             
-            # Asegurar que el directorio exista
             os.makedirs(os.path.dirname(ruta_local), exist_ok=True)
             
-            # Guardar archivo localmente
             with open(ruta_local, 'wb') as f:
                 f.write(archivo.file.read())
             
-            # Verificar si el archivo existe antes de subirlo
             if not os.path.exists(ruta_local):
                 print(f"Error: El archivo {ruta_local} no existe")
                 return None
             
-            # Subir a Firebase Storage
-            try:
-                self.storage.child(ruta_storage).put(ruta_local)
-            except Exception as e:
-                print(f"Error al subir a Firebase Storage: {str(e)}")
-                # Continuar con la ruta local si la subida falla
-            
-            # Construir URL de la foto (usar ruta local si la subida falla)
             url_foto = f"/static/uploads/bebes/{nombre_archivo}"
             
-            # Actualizar datos del paciente con la URL de la foto
-            self.db.child("pacientes").child(paciente_id).update({
+            # Actualizar en la ruta correcta
+            self.db.child("usuarios").child(pediatra_uid).child("bebesvinculados").child(paciente_id).update({
                 "foto_perfil": url_foto
             })
             
@@ -383,8 +405,24 @@ class Personas:
         except Exception as e:
             print(f"Error al actualizar foto del bebé: {str(e)}")
             return None
+        
     def subir_documentos_paciente(self, paciente_id, datos):
         try:
+            # Encontrar el pediatra vinculado al paciente
+            usuarios = self.db.child("usuarios").get().val()
+            pediatra_uid = None
+            
+            for uid, datos_usuario in usuarios.items():
+                if (datos_usuario.get("rol") == "pedia" and 
+                    datos_usuario.get("bebesvinculados") and 
+                    paciente_id in datos_usuario.get("bebesvinculados")):
+                    pediatra_uid = uid
+                    break
+            
+            if not pediatra_uid:
+                print(f"No se encontró un pediatra vinculado al paciente {paciente_id}")
+                return None
+                
             documentos_guardados = {}
             
             # Tipos de documentos a guardar
@@ -426,9 +464,10 @@ class Personas:
                     # Almacenar la URL del documento
                     documentos_guardados[tipo_documento] = url_documento
             
-            # Actualizar los documentos en la base de datos
+            # Actualizar los documentos en la base de datos en la ruta correcta
             if documentos_guardados:
-                self.db.child("pacientes").child(paciente_id).child("documentos").update(documentos_guardados)
+                # Crear la estructura de documentos si no existe
+                self.db.child("usuarios").child(pediatra_uid).child("bebesvinculados").child(paciente_id).child("documentos").update(documentos_guardados)
                 print(f"Documentos actualizados para el paciente {paciente_id}")
                 return documentos_guardados
             

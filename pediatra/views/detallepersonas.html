@@ -348,7 +348,7 @@ $def with (datos)
             <i class="fas fa-heartbeat"></i> BabyChat
         </div>
         <div class="list-group">
-            <a href="/listapersonas" class="list-group-item active">
+            <a href="/listaspersonas" class="list-group-item active">
                 <i class="fas fa-user-md"></i> Pacientes
             </a>
             <a href="/estadisticas" class="list-group-item">
@@ -366,7 +366,7 @@ $def with (datos)
     <!-- Contenido principal -->
     <div class="main-content">
         <!-- Botón de volver -->
-        <a href="/listapersonas" class="back-btn">← Volver a la lista</a>
+        <a href="/listaspersonas" class="back-btn">← Volver a la lista</a>
 
         <!-- Tarjeta de perfil -->
         <div class="profile-card">
@@ -427,12 +427,12 @@ $def with (datos)
                         
                         <div class="form-group">
                             <div class="form-label">Primer apellido</div>
-                            <input type="text" class="form-input"  value="$paciente.get('primer_apellido', 'N/A')" name="apellido1">
+                            <input type="text" class="form-input"  value="$paciente.get('primer_apellido', 'N/A')" name="primer_apellido">
                         </div>
                         
                         <div class="form-group">
                             <div class="form-label">Segundo apellido</div>
-                            <input type="text" class="form-input" value="$paciente.get('segundo_apellido', 'N/A')" name="apellido2">
+                            <input type="text" class="form-input" value="$paciente.get('segundo_apellido', 'N/A')" name="segundo_apellido">
                         </div>
                         
                         <div class="form-group">
@@ -521,16 +521,10 @@ $def with (datos)
                 <div class="form-row">
                     <div class="form-column">
                         <h3 class="section-header">Antecedentes neonatales</h3>
-                        <label>
-                            <input type="radio" name="antecedente_neonatal" 
-                                   {{ 'checked' if paciente.get('antecedente_neonatal') == 'si' else '' }}>
-                            Sí
-                        </label>
-                        <label>
-                            <input type="radio" name="antecedente_neonatal"
-                                   {{ 'checked' if paciente.get('antecedente_neonatal') == 'no' else '' }}>
-                            No
-                        </label>
+                        <div class="form-group">
+                            <div class="form-label">Antecedentes neonatales</div>
+                            <textarea class="form-input" name="antecedente_neonatal" rows="5" cols="50">$paciente.get('antecedente_neonatal', 'N/A')</textarea>
+                        </div>
                         
                         <h3 class="section-header">Edad neonatal</h3>
                         <div class="form-group">
@@ -553,20 +547,12 @@ $def with (datos)
                         </div>
                         
                         <h3 class="section-header">Antecedentes familiares patológicos</h3>
-                            <div class="radio-group">
-                                <label>Patologías</label>
-                                <label>
-                                    <input type="radio" name="patologias" value="si"
-                                        $if paciente.get('patologias') == 'si': checked>
-                                    Sí
-                                </label>
-                                <label>
-                                    <input type="radio" name="patologias" value="no"
-                                        $if paciente.get('patologias') == 'no': checked>
-                                    No
-                                </label>
-                            </div
-                                                    
+                        <div class="form-group">
+                            <div class="form-label">Antecedentes patológicos</div>
+                            <textarea class="form-input" name="patologias" rows="5" cols="50">$paciente.get('patologias', 'N/A')</textarea>
+                        </div>
+                        
+                                                                        
                         <h3 class="section-header">Datos de la Madre</h3>
                         <div class="form-group">
                             <div class="form-label">Gestas:</div>
@@ -584,44 +570,22 @@ $def with (datos)
                             <div class="form-label">Cesáreas:</div>
                             <input type="number" value="$paciente.get('cesareas', 'N/A')" class="form-input" name="cesareas" min="0">
                         </div>
-                        
-                        <div class="radio-group">
-                            <h3>Condición de Riesgo</h3>
-                            <label>
-                                <input type="radio" name="normal" 
-                                       {% if paciente.get('normal', '') == 'normal' %}checked{% endif %}>
-                                Normal
-                            </label>
-                            <label>
-                                <input type="radio" name="riesgo" 
-                                       {% if paciente.get('riesgo', '') == 'riesgo' %}checked{% endif %}>
-                                Riesgo
-                            </label>
-                            <label>
-                                <input type="radio" name="alto_riesgo" 
-                                       {% if paciente.get('alto_riesgo', '') == 'alto_riesgo' %}checked{% endif %}>
-                                Alto Riesgo
-                            </label>
+
+                        <h3 class="section-header">Condición de riesgo</h3>
+                        <div class="form-group" style="display: flex; align-items: center;">
+                            <div class="form-label">Condición de riesgo</div>
+                            <textarea name="riesgo" class="form-input" rows="4" 
+                                      style="margin-left: auto;" placeholder="Ingrese la condición de riesgo">$paciente.get('riesgo', 'N/A')</textarea>
                         </div>
+                        
+                        
                         
                         <h3 class="section-header">Terminación del Parto</h3>
-                        <div class="radio-group">
-                            <label>
-                                <input type="radio" name="espontaneo" 
-                                       {% if paciente.get('espontaneo', '') == 'espontaneo' %}checked{% endif %}>
-                                Espontáneo
-                            </label>
-                            <label>
-                                <input type="radio" name="intraoperatoria" 
-                                       {% if paciente.get('intraoperatoria', '') == 'intraoperatoria' %}checked{% endif %}>
-                                Intraoperatoria
-                            </label>
-                            <label>
-                                <input type="radio" name="electiva" 
-                                       {% if paciente.get('electiva', '') == 'electiva' %}checked{% endif %}>
-                                Electiva
-                            </label>
+                        <div class="form-group" style="display: flex; align-items: center;">
+                            <div class="form-label" style="margin-right: 10px;">Terminación del parto</div>
+                            <textarea name="terminacion" class="form-input" rows="4" style="margin-left: auto;" placeholder="Ingrese la terminación del parto">$paciente.get('terminacion', 'N/A')</textarea>
                         </div>
+                        
                     </div>
                 </div>
                 <!-- Botones de acción para antecedentes -->

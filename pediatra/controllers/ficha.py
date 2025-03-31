@@ -7,18 +7,34 @@ class DetallePersonas:
     def GET(self, persona_id):  
         #web.debug(f"🌟 ID recibido en la URL: {persona_id}")  # <-- Verificamos si el ID llega bien
         
+        session = web.ctx.session  
+        if not session.get('usuario'):
+                print("🚫 No hay usuario en sesión. Redirigiendo a /iniciosesion...")
+                raise web.seeother('/iniciosesion')
+            
+            #print(f"🔍 Sesión actual: {session.get('usuario')}")
+        
+        usuario = session.get('usuario')
+        if usuario.get('rol') != 'pedia':
+                print("🚫 Acceso denegado. Solo los pediatras pueden ver esta lista.")
+                raise web.seeother('/')
+            
+        correo_pediatra = usuario.get('correo')
+        print("🌟 ID recibido en la URL: ", persona_id)  # <-- Verificamos si el ID llega bien
+        print(f"🔍 Correo pediatra: {correo_pediatra}")
         if not persona_id:
             return "⚠️ Error: No se recibió un ID válido."
 
         try:
             p = Personas()
-            datos_persona = p.lista_pacientes_por_id_y_pediatra(paciente_id=persona_id)
+            datos_persona = p.obtener_bebe_por_id(persona_id, correo_pediatra)
             #web.debug(f"🔍 Datos obtenidos: {datos_persona}")  # Para verificar estructura
-
+            print("🔍 Datos obtenidos: ", datos_persona)  # Para verificar estructura
             # Extraemos el paciente del diccionario
             paciente = datos_persona.get(persona_id, None)
             #web.debug(f"✅ Paciente seleccionado: {paciente}")  # Para verificar
-
+            print(f"✅ Paciente seleccionado: {paciente}")  # Para verificar
+            
             if paciente:
                 return render.ficha(paciente=paciente)
             else:

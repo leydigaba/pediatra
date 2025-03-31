@@ -11,7 +11,7 @@ class EstadisticaUsuario:
                 print("🚫 No hay usuario en sesión. Redirigiendo a /iniciosesion...")
                 raise web.seeother('/iniciosesion')  # Redirige a la página de inicio de sesión
             
-            print(f"🔍 Sesión actual: {session.get('usuario')}")
+            #print(f"🔍 Sesión actual: {session.get('usuario')}")
  
             p = Personas()  
             correo_pediatra = session.get('usuario').get('correo')
@@ -19,13 +19,24 @@ class EstadisticaUsuario:
             pacientes = p.lista_pacientes(correo_pediatra) 
 
             # Procesamos los datos para asegurarnos de que tengan las propiedades necesarias
-            for id, paciente in pacientes.items():
-                paciente.setdefault('estado', 'pendiente')
-                if 'edad' in paciente and isinstance(paciente['edad'], (int, float)):
-                    paciente['edad'] = f"{paciente['edad']} años"
-                paciente.setdefault('ultima_visita', 'Sin registro')
-
-            return render.estadistica_personas(pacientes)
+            # Transformar los datos para que coincidan con la plantilla
+            pacientes_formateados = []
+            for p in pacientes:
+                pacientes_formateados.append({
+                    'id': p['ID'], 
+                    'nombre': p['Nombre'],
+                    'primer_apellido': p['Apellido(s)'].split()[0] if p['Apellido(s)'] and ' ' in p['Apellido(s)'] else p['Apellido(s)'],
+                    'segundo_apellido': p['Apellido(s)'].split()[1] if p['Apellido(s)'] and ' ' in p['Apellido(s)'] else '',
+                    'edad': p['Edad'],
+                    'genero': p['Género'].lower(),
+                    'estado': 'activo',  # Por defecto,
+                    'oms': p['oms'] if 'oms' in p else '',  # Asegurarse de que la propiedad existe
+                })
+            print(f"👶 Pacientes encontrados: {pacientes_formateados}")
+            pacientes_dict = {p['id']: p for p in pacientes_formateados}
+            return render.estadisticapersonas(pacientes_dict)
+            #print(f"👶 Pacientes encontrados: {pacientes_formateados}")
+            #return render.estadisticapersonas(pacientes_formateados)
         except web.seeother as redireccion:
             raise redireccion  # Redirige correctamente sin capturar como error
         except Exception as error:

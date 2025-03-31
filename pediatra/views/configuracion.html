@@ -201,7 +201,7 @@ $def with (datos_pediatra, mensaje=None)
                 <i class="fas fa-heartbeat"></i> BabyChat
             </div>
             <div class="list-group">
-                <a href="/listapersonas" class="list-group-item">
+                <a href="/listaspersonas" class="list-group-item">
                     <i class="fas fa-user-md"></i> Pacientes
                 </a>
                 <a href="/estadisticas" class="list-group-item">
@@ -247,7 +247,7 @@ $def with (datos_pediatra, mensaje=None)
                         </label>
                     </div>
                     <div class="profile-title">
-                        <h4>Dr. $datos_pediatra.get('nombre', '') $datos_pediatra.get('apellido1', '') $datos_pediatra.get('apellido2', '')</h4>
+                        <h4>Dr. $datos_pediatra.get('nombre', '') $datos_pediatra.get('primer_apellido', '') $datos_pediatra.get('segundo_apellido', '')</h4>
                         <p><i class="fas fa-envelope me-2"></i>$datos_pediatra.get('correo', 'Sin correo registrado')</p>
                         $if datos_pediatra.get('licencia'):
                             <p><i class="fas fa-id-card me-2"></i>Licencia: $datos_pediatra.get('licencia')</p>
@@ -261,12 +261,12 @@ $def with (datos_pediatra, mensaje=None)
                         <input type="text" class="form-control" id="nombre" value="$datos_pediatra.get('nombre', '')" name="nombre" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="apellido1" class="form-label">Primer Apellido</label>
-                        <input type="text" class="form-control" id="apellido1" value="$datos_pediatra.get('apellido1', '')" name="apellido1" required>
+                        <label for="primer_apellido" class="form-label">Primer Apellido</label>
+                        <input type="text" class="form-control" id="primer_apellido" value="$datos_pediatra.get('primer_apellido', '')" name="primer_apellido" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="apellido2" class="form-label">Segundo Apellido</label>
-                        <input type="text" class="form-control" id="apellido2" value="$datos_pediatra.get('apellido2', '')" name="apellido2">
+                        <label for="segundo_apellido" class="form-label">Segundo Apellido</label>
+                        <input type="text" class="form-control" id="segundo_apellido" value="$datos_pediatra.get('segundo_apellido', '')" name="segundo_apellido">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="correo" class="form-label">Correo Electrónico</label>
@@ -274,8 +274,8 @@ $def with (datos_pediatra, mensaje=None)
                         <small class="text-muted">El correo no se puede modificar ya que es tu identificador único.</small>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
-                        <input type="date" class="form-control" id="fecha_nacimiento" value="$datos_pediatra.get('fecha_nacimiento', '')" required name="fecha_nacimiento">
+                        <label for="nacimiento" class="form-label">Fecha de Nacimiento</label>
+                        <input type="date" class="form-control" id="nacimiento" value="$datos_pediatra.get('nacimiento', '')" required name="nacimiento">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="licencia" class="form-label">Número de Licencia Médica</label>
