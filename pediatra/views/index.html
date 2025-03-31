@@ -1,0 +1,335 @@
+
+<head>
+    <meta charset="UTF-8">
+    <title>BabyChat - Comunidad de Padres y Cuidadores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+       
+        header {
+            text-align: center;
+            padding: 50px;
+            background-color: #f9f9f9;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+        }
+        
+        
+        .contenido {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 50px;
+            max-width: 1000px;
+            margin: auto;
+        }
+        
+        
+        .texto_arriba {
+            flex: 1;
+            text-align: justify;
+            max-width: 500px;
+            margin-right: 100px;
+            position: relative; 
+            top: 5px; 
+            
+        }
+        .contenedor-imagenes {
+            display: flex; 
+            justify-content:  flex-end; 
+            align-items: center; 
+            gap: 100px; 
+        }
+
+        .contenedor-imagenes img:first-child { 
+            width: 350px; 
+            position: absolute;
+            top: 200; /*abajo*/
+            left: 600; /*derecha*/
+            z-index: 1; 
+            right: 300px; /* izquierda*/
+            width: 350px; /* Ajusta según necesites */
+            height: 350px;
+            margin-left: 50px;
+        }
+
+        .contenedor-imagenes img:last-child { 
+            width: 350px;
+            top: 60; /*abajo*/ 
+        }
+
+        .contenedor-imagenes img {
+            width: 150px;
+            height: auto;
+            border-radius: 10px;
+            top: 90; /*abajo*/
+        }
+        
+        .botones-accion {
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .registrarse {
+            background-color: #007BFF;
+            color: white;
+        }
+        
+        .iniciar-sesion {
+            background-color: #17A2B8;
+            color: white;
+        }
+        
+        
+        .contenedor-tarjetas {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 40px;
+        }
+        
+        .tarjeta {
+            width: 200px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            background-color: white;
+        }
+        
+        .tarjeta img {
+            width: 80px;
+            height: 80px;
+        }
+        
+        /* Pie de página */
+        .pie-pagina {
+            background-color: #f1f1f1;
+            padding: 30px;
+            text-align: center;
+        }
+        .texto_medio {
+            background-color: #edf8ff; /* Color de fondo azul */
+            color: #98a7b6; /* Texto en color gris */
+            text-align: center; /* Centrar el texto horizontalmente */
+            border-radius: 8px; /* Bordes redondeados */
+            padding: 20px; /* Espaciado interno */
+            top: 400px;
+            display: flex;
+            justify-content: center; /* Centra el contenido horizontalmente dentro del recuadro */
+            align-items: center; /* Centra el contenido verticalmente dentro del recuadro */
+            height: 210px; /* Ajusta la altura según lo que necesites */
+        }
+        .texto {
+            width: 45%; /* Ancho del texto (menos de la mitad del recuadro) */
+            text-align: left; /* Alineación a la izquierda */
+            margin-right: auto; /* Asegura que el texto se quede a la izquierda */
+        }
+        .texto_medio {
+            display: flex;
+            align-items: flex-start; /* Alinea la imagen y el texto al principio */
+        }
+
+        .texto_medio {
+            display: flex;
+            align-items: flex-start; /* Alinea la imagen y el texto al principio */
+            gap: 20px; /* Crea un espacio entre la imagen y el texto */
+        }
+
+        .texto_medio img {
+            width: 500px; /* Tamaño de la imagen */
+            height: auto; /* Mantener la proporción */
+            margin-top: 10px; /* Espacio entre la imagen y el texto (ajústalo si lo necesitas) */
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            
+        }
+
+        .card h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 2rem;
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 0.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .feature {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            background-color: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateX(5px);
+            background-color: #e1e7f1;
+        }
+
+        .feature-icon {
+            color: #007bff;
+            font-size: 2rem;
+            margin-top: 0.2rem;
+        }
+
+        .feature-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .feature-content p {
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+
+
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Bienvenidos a BabyChat</h1>
+    <p>Tu Comunidad de Padres y Cuidadores</p>
+</header>
+
+<section class="contenido">
+    
+    <div class="texto_arriba">
+        <h2>Atención </h2>
+        <p>Personales de confianza</p>
+        <p>
+            Un espacio donde los pediatras pueden registrar, analizar y dar seguimiento al desarrollo de cada niño, 
+            asegurando un cuidado personalizado y una historia clínica siempre accesible.
+        </p>
+        <div class="botones-accion">
+            <a href="/registro">
+                <button class="registrarse">Registrarse</button>
+            </a>
+            <a href="/iniciosesion">
+            <button class="iniciar-sesion">Iniciar Sesión</button>
+            </a>
+        </div>
+    </div>
+
+    
+    <div class="contenedor-imagenes">
+        <img src="/static/imagenes/pediatra.png" alt="Imagen de pediatra">
+        <img src="/static/imagenes/pd2.png" alt="Consulta pediátrica">
+    </div>
+    
+</section>
+
+<!-- Sección de tarjetas -->
+<section class="seccion">
+    <div class="contenedor-tarjetas">
+        <div class="tarjeta">
+            <img src="/static/imagenes/advertencia.png" alt="Alertas médicas">
+            <h3>Alertas médicas</h3>
+        </div>
+        <div class="tarjeta">
+            <img src="/static/imagenes/crecimiento.png" alt="Control de crecimiento">
+            <h3>Control de crecimiento</h3>
+        </div>
+        <div class="tarjeta">
+            <img src="/static/imagenes/moderacion.png" alt="Moderación profesional">
+            <h3>Moderación profesional</h3>
+        </div>
+    </div>
+</section>
+
+<section class="contenido">
+    <div class="texto_medio">
+        <img src="/static/imagenes/doctores.PNG" alt="Imagen de pediatra">
+        <div class="texto">
+            <p>
+                Sabemos que ser padre viene con muchas dudas y desafíos. En BabyChat, no tienes que enfrentarlos solo. Nuestra plataforma te conecta con una comunidad de padres, expertos en crianza y cuidadores que comparten consejos, experiencias y apoyo en tiempo real.
+            </p>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="card">
+        <h1>Gestión de Información de Forma Segura</h1>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">◆</div>
+                <div class="feature-content">
+                    <h3>Sistema de registros confiables</h3>
+                    <p>Toda la información se almacena de manera segura, accesible solo para el pediatra y el paciente.</p>
+                </div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">◆</div>
+                <div class="feature-content">
+                    <h3>Acceso a la historia clínica</h3>
+                    <p>Los pediatras pueden acceder al historial completo de un niño para facilitar la toma de decisiones informadas.</p>
+                </div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">◆</div>
+                <div class="feature-content">
+                    <h3>Privacidad garantizada</h3>
+                    <p>Cumplimos con todos los estándares de seguridad para asegurar la confidencialidad de los datos médicos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="pie-pagina">
+    <p>Sabemos que ser padre viene con muchas dudas y desafíos. En BabyChat, no tienes que enfrentarlos solo. Nuestra plataforma te conecta con una comunidad de padres, expertos en crianza y cuidadores que comparten consejos, experiencias y apoyo en tiempo real.</p>
+</section>
+
+</body>
+</html>

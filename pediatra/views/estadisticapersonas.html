@@ -1,0 +1,684 @@
+$def with (datos)
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Seguimiento Infantil</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+            --sidebar-width: 250px;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8f9fc;
+        }
+        
+        /* Sidebar */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+            position: fixed;
+            z-index: 999;
+            transition: all 0.3s;
+        }
+        
+        #sidebar-wrapper .sidebar-heading {
+            padding: 1.5rem 1rem;
+            font-size: 1.5rem;
+            color: white;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #sidebar-wrapper .list-group {
+            width: var(--sidebar-width);
+        }
+        
+        #sidebar-wrapper .list-group-item {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        #sidebar-wrapper .list-group-item:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        #sidebar-wrapper .list-group-item.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid white;
+        }
+        
+        #sidebar-wrapper .list-group-item i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Contenido principal */
+        #page-content-wrapper {
+            width: calc(100% - var(--sidebar-width));
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+        
+        /* Encabezado y búsqueda */
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Barra de búsqueda desplegable */
+        .search-toggle {
+            cursor: pointer;
+            margin-right: 10px;
+            color: #4e73df;
+        }
+        
+        .search-container {
+            position: relative;
+        }
+        
+        .search-input-group {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .search-section {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .search-section.collapsed {
+            max-height: 0;
+            padding: 0 1.5rem;
+            margin-bottom: 0;
+            opacity: 0;
+        }
+        
+        /* Tabla de pacientes */
+        .table-container {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        
+        .table-container .table {
+            margin-bottom: 0;
+        }
+        
+        .table-container .table thead th {
+            background-color: #f8f9fc;
+            border-top: none;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-activo {
+            background-color: #1cc88a;
+            color: white;
+        }
+        
+        .status-inactivo {
+            background-color: #e74a3b;
+            color: white;
+        }
+        
+        .status-pendiente {
+            background-color: #f6c23e;
+            color: white;
+        }
+        
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Botón flotante para agregar paciente */
+        .btn-float {
+            position: fixed;
+            right: 2rem;
+            bottom: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            box-shadow: 0 0.25rem 1rem 0 rgba(58, 59, 69, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sección de estadísticas */
+        .stats-container {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+        
+        .stats-text {
+            font-size: 2rem;
+            color: #4e73df;
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: -var(--sidebar-width);
+            }
+            
+            #page-content-wrapper {
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            #sidebar-wrapper.active {
+                margin-left: 0;
+            }
+            
+            #page-content-wrapper.active {
+                margin-left: var(--sidebar-width);
+                width: calc(100% - var(--sidebar-width));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading">
+                <i class="fas fa-heartbeat"></i> BabyChat
+            </div>
+            <div class="list-group">
+                <a href="/listapersonas" class="list-group-item ">
+                    <i class="fas fa-user-md"></i> Pacientes
+                </a>
+                <a href="/estadisticas" class="list-group-item active">
+                    <i class="fas fa-chart-line"></i> Estadísticas
+                </a>
+                <a href="/configuracion" class="list-group-item">
+                    <i class="fas fa-cog"></i> Configuración
+                </a>
+                
+                <a href="/logout" class="list-group-item">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </div>
+        
+        <!-- Contenido principal -->
+        <div id="page-content-wrapper">
+            <!-- Encabezado -->
+            <div class="page-header">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h1 class="h3 mb-0 text-gray-800">Panel de Control</h1>
+                        <p class="text-muted">Resumen de pacientes y estadísticas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenido dividido en dos columnas -->
+            <div class="row">
+                <!-- Mitad izquierda: Buscador y tabla -->
+                <div class="col-lg-6">
+                    <!-- Barra de búsqueda compacta -->
+                    <div class="search-container mb-4">
+                        <div class="search-input-group">
+                            <button class="btn btn-light search-toggle" id="toggleSearch">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Buscar paciente...">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Sección de búsqueda desplegable -->
+                        <div class="search-section collapsed" id="searchSection">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="edad" class="form-label">Edad</label>
+                                    <select class="form-select" id="edad">
+                                        <option value="">Todas las edades</option>
+                                        <option value="0-1">0-1 años</option>
+                                        <option value="1-3">1-3 años</option>
+                                        <option value="3-5">3-5 años</option>
+                                        <option value="5-12">5-12 años</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="estado" class="form-label">Estado</label>
+                                    <select class="form-select" id="estado">
+                                        <option value="">Todos los estados</option>
+                                        <option value="activo">Activo</option>
+                                        <option value="inactivo">Inactivo</option>
+                                        <option value="pendiente">Pendiente</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="genero" class="form-label">Género</label>
+                                    <select class="form-select" id="genero">
+                                        <option value="">Todos</option>
+                                        <option value="masculino">Masculino</option>
+                                        <option value="femenino">Femenino</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button class="btn btn-outline-secondary me-2">
+                                        <i class="fas fa-sync-alt"></i> Restablecer
+                                    </button>
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-filter"></i> Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabla de pacientes -->
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        
+                                        <th>Nombre</th>
+                                        <th>Edad</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                        <th style="display:none;">OMS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    $if datos:
+                                        $for id, paciente in datos.items():
+                                            <tr>
+                                                
+                                                <td>$paciente.get('nombre', 'N/A') $paciente.get('apellido1', '') $paciente.get('apellido2', '')</td>
+                                                <td>$paciente.get('edad', 'N/A')</td>
+                                                <td>
+                                                    $if paciente.get('estado') == 'activo':
+                                                        <span class="status-badge status-activo">Activo</span>
+                                                    $elif paciente.get('estado') == 'inactivo':
+                                                        <span class="status-badge status-inactivo">Inactivo</span>
+                                                    $else:
+                                                        <span class="status-badge status-pendiente">Pendiente</span>
+                                                </td>
+                                                <td>
+                                                    <a href="/usuario/$id" class="btn btn-info btn-sm">Ver</a>
+                                                </td>
+                                                <td style="display:none;" class="oms-valor">$paciente.get('oms', 'No disponible')</td>
+                                            </tr>
+                                    $else:
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4">
+                                                <i class="fas fa-info-circle me-2"></i> No hay pacientes registrados
+                                            </td>
+                                        </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <span class="text-muted">
+                                    $if datos:
+                                        Mostrando ${len(datos)} paciente(s)
+                                    $else:
+                                        No hay pacientes registrados
+                                </span>
+                            </div>
+                            $if datos and len(datos) > 10:
+                                <nav>
+                                    <ul class="pagination pagination-sm">
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mitad derecha: Solo texto de Estadística -->
+                <div class="col-lg-6">
+                    <div class="stats-container" style="min-height: 500px;">
+                        <div class="stats-text">Estadística</div>
+                        <div class="stats-text"></div>
+                        <div class="growth-chart-container mt-4" style="width: 100%; height: 400px;">
+                            <h5>Estatura para la edad niñas (0-5 años)</h5>
+                            <canvas id="growthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botón flotante para agregar paciente en móvil -->
+    <a href="/agregar_paciente" class="btn btn-primary btn-float d-md-none">
+        <i class="fas fa-plus"></i>
+    </a>
+    
+    <!-- Bootstrap JS y Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar en móvil
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnFloat = document.querySelector('.btn-float');
+            const sidebar = document.getElementById('sidebar-wrapper');
+            const content = document.getElementById('page-content-wrapper');
+            
+            btnFloat.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    sidebar.classList.toggle('active');
+                    content.classList.toggle('active');
+                }
+            });
+            
+            // Toggle de la sección de búsqueda
+            const toggleSearch = document.getElementById('toggleSearch');
+            const searchSection = document.getElementById('searchSection');
+            
+            toggleSearch.addEventListener('click', function() {
+                searchSection.classList.toggle('collapsed');
+                
+                // Cambiar icono del botón
+                const icon = toggleSearch.querySelector('i');
+                if (searchSection.classList.contains('collapsed')) {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-filter');
+                } else {
+                    icon.classList.remove('fa-filter');
+                    icon.classList.add('fa-chevron-up');
+                }
+            });
+
+            // Hacer que los botones "Ver" muestren el nombre del paciente en la sección de estadísticas
+            const verBotones = document.querySelectorAll('.btn-info');
+            const statsText = document.querySelector('.stats-text');
+            
+            // Inicializar la gráfica de crecimiento
+            const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+const growthChart = new Chart(ctxGrowth, {
+    type: 'line',
+    data: {
+        datasets: [
+            {
+                label: '97th',
+                data: [
+                    {x: 0, y: 50}, {x: 3, y: 62}, {x: 6, y: 67}, {x: 9, y: 71}, {x: 12, y: 75}, 
+                    {x: 15, y: 79}, {x: 18, y: 82}, {x: 21, y: 85}, {x: 24, y: 88}, {x: 27, y: 90}, 
+                    {x: 30, y: 93}, {x: 33, y: 95}, {x: 36, y: 97}, {x: 39, y: 99}, {x: 42, y: 101}, 
+                    {x: 45, y: 103}, {x: 48, y: 105}, {x: 51, y: 107}, {x: 54, y: 109}, {x: 57, y: 111}, 
+                    {x: 60, y: 113}
+                ],
+                borderColor: 'rgba(255, 0, 0, 1)',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: '85th',
+                data: [
+                    {x: 0, y: 48}, {x: 3, y: 59}, {x: 6, y: 64}, {x: 9, y: 68}, {x: 12, y: 72}, 
+                    {x: 15, y: 75}, {x: 18, y: 78}, {x: 21, y: 81}, {x: 24, y: 84}, {x: 27, y: 86}, 
+                    {x: 30, y: 88}, {x: 33, y: 90}, {x: 36, y: 92}, {x: 39, y: 94}, {x: 42, y: 96}, 
+                    {x: 45, y: 98}, {x: 48, y: 100}, {x: 51, y: 102}, {x: 54, y: 104}, {x: 57, y: 106}, 
+                    {x: 60, y: 108}
+                ],
+                borderColor: 'rgba(255, 200, 0, 1)',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: '50th',
+                data: [
+                    {x: 0, y: 45}, {x: 3, y: 57}, {x: 6, y: 61}, {x: 9, y: 65}, {x: 12, y: 69}, 
+                    {x: 15, y: 72}, {x: 18, y: 75}, {x: 21, y: 78}, {x: 24, y: 80}, {x: 27, y: 82}, 
+                    {x: 30, y: 84}, {x: 33, y: 86}, {x: 36, y: 88}, {x: 39, y: 90}, {x: 42, y: 92}, 
+                    {x: 45, y: 94}, {x: 48, y: 96}, {x: 51, y: 98}, {x: 54, y: 100}, {x: 57, y: 102}, 
+                    {x: 60, y: 104}
+                ],
+                borderColor: 'rgba(0, 200, 0, 1)',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: '15th',
+                data: [
+                    {x: 0, y: 43}, {x: 3, y: 54}, {x: 6, y: 58}, {x: 9, y: 62}, {x: 12, y: 65}, 
+                    {x: 15, y: 68}, {x: 18, y: 71}, {x: 21, y: 74}, {x: 24, y: 76}, {x: 27, y: 78}, 
+                    {x: 30, y: 80}, {x: 33, y: 82}, {x: 36, y: 84}, {x: 39, y: 86}, {x: 42, y: 88}, 
+                    {x: 45, y: 90}, {x: 48, y: 92}, {x: 51, y: 94}, {x: 54, y: 96}, {x: 57, y: 98}, 
+                    {x: 60, y: 100}
+                ],
+                borderColor: 'rgba(255, 200, 0, 1)',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: '3rd',
+                data: [
+                    {x: 0, y: 40}, {x: 3, y: 51}, {x: 6, y: 55}, {x: 9, y: 59}, {x: 12, y: 62}, 
+                    {x: 15, y: 65}, {x: 18, y: 68}, {x: 21, y: 70}, {x: 24, y: 72}, {x: 27, y: 74}, 
+                    {x: 30, y: 76}, {x: 33, y: 78}, {x: 36, y: 80}, {x: 39, y: 82}, {x: 42, y: 84}, 
+                    {x: 45, y: 86}, {x: 48, y: 88}, {x: 51, y: 90}, {x: 54, y: 92}, {x: 57, y: 94}, 
+                    {x: 60, y: 96}
+                ],
+                borderColor: 'rgba(255, 0, 0, 1)',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                title: {
+                    display: true,
+                    text: 'Estatura (cm)'
+                },
+                min: 40,
+                max: 120,
+                ticks: {
+                    stepSize: 20
+                }
+            },
+            x: {
+                type: 'linear',
+                title: {
+                    display: true,
+                    text: 'Edad (meses)'
+                },
+                min: 0,
+                max: 60,
+                ticks: {
+                    stepSize: 3
+                }
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'OMS',
+                font: {
+                    size: 14
+                }
+            },
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+verBotones.forEach(boton => {
+    boton.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevenir navegación
+        
+        // Obtener el nombre del paciente y valor OMS de la fila correspondiente
+        const fila = this.closest('tr');
+        const nombrePaciente = fila.cells[0].textContent.trim();
+        const omsValorRaw = fila.querySelector('.oms-valor').textContent.trim();
+        
+        // Actualizar el texto de estadísticas
+        statsText.innerHTML = 'Estadística: ' + nombrePaciente ;
+        
+        // Resetear gráfica - eliminar dataset del paciente si ya existe
+        const patientDatasetIndex = growthChart.data.datasets.findIndex(dataset => dataset.label === 'Paciente' || dataset.label === 'Altura');
+        if (patientDatasetIndex > -1) {
+            growthChart.data.datasets.splice(patientDatasetIndex, 1);
+        }
+        
+        // Verificar que OMS no esté vacío
+        if (omsValorRaw && omsValorRaw.trim() !== '' && omsValorRaw !== 'No disponible') {
+            try {
+                // Intentar parsear el JSON del valor OMS
+                let omsData = [];
+                if (omsValorRaw.startsWith('[')) {
+                    omsData = JSON.parse(omsValorRaw);
+                } else {
+                    omsData = JSON.parse('[' + omsValorRaw + ']');
+                }
+                
+                // Crear los puntos de datos del paciente
+                const patientPoints = [];
+                
+                // Procesar cada punto de datos y agregarlo directamente
+                for (let i = 0; i < omsData.length; i++) {
+                    const dataPoint = omsData[i];
+                    const edadMeses = parseInt(dataPoint.edad);
+                    const estatura = parseFloat(dataPoint.estatura);
+                    
+                    if (!isNaN(edadMeses) && !isNaN(estatura) && edadMeses >= 0 && edadMeses <= 60) {
+                        patientPoints.push({
+                            x: edadMeses,
+                            y: estatura
+                        });
+                    }
+                }
+                
+                // Ordenar los puntos por edad (eje x)
+                patientPoints.sort((a, b) => a.x - b.x);
+                
+                // Personalizar los puntos para el dataset del paciente
+                growthChart.data.datasets.push({
+                    label: 'Altura',
+                    data: patientPoints,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 1)',
+                    pointRadius: 8,
+                    pointHoverRadius: 10,
+                    pointStyle: 'circle',
+                    showLine: true
+                });
+                
+                growthChart.update();
+                
+                // Agregar etiquetas a los puntos después de actualizar la gráfica
+                setTimeout(() => {
+                    const patientDatasetIndex = growthChart.data.datasets.findIndex(dataset => dataset.label === 'Altura');
+                    if (patientDatasetIndex !== -1) {
+                        const meta = growthChart.getDatasetMeta(patientDatasetIndex);
+                        const ctx = growthChart.ctx;
+                        
+                        for (let i = 0; i < meta.data.length; i++) {
+                            const point = meta.data[i];
+                            const dataPoint = patientPoints[i];
+                            
+                            // Dibujar etiqueta con el número del mes
+                            ctx.save();
+                            ctx.fillStyle = 'white';
+                            ctx.strokeStyle = 'rgba(75, 192, 192, 1)';
+                            ctx.lineWidth = 2;
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = 'bold 11px Arial';
+                            
+                            // Dibujar un círculo con el número
+                            ctx.beginPath();
+                            ctx.arc(point.x, point.y, 10, 0, 2 * Math.PI);
+                            ctx.fill();
+                            ctx.stroke();
+                            
+                            // Dibujar el número
+                            ctx.fillStyle = 'rgba(75, 192, 192, 1)';
+                            ctx.fillText(dataPoint.x.toString(), point.x, point.y);
+                            ctx.restore();
+                        }
+                    }
+                }, 100);
+            } catch (error) {
+                console.error("Error al procesar datos OMS:", error);
+                // No hacemos nada si hay un error, simplemente no mostramos puntos
+            }
+        } else {
+            // Si OMS está vacío, solo actualizamos la gráfica sin agregar puntos
+            growthChart.update();
+        }
+    });
+});
+
+
+});
+        
+    </script>
+    <!-- Chart.js para gráficas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.0.0/chartjs-plugin-annotation.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,821 @@
+$def with (datos)
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BabyChat - Ficha médica pediátrica</title>
+    <!-- Font Awesome para iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Variables globales */
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+            --sidebar-width: 250px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            background-color: #f5f8fb;
+        }
+        
+        /* Sidebar */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+            position: fixed;
+            z-index: 999;
+            transition: all 0.3s;
+        }
+        
+        #sidebar-wrapper .sidebar-heading {
+            padding: 1.5rem 1rem;
+            font-size: 1.5rem;
+            color: white;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #sidebar-wrapper .list-group {
+            width: var(--sidebar-width);
+        }
+        
+        #sidebar-wrapper .list-group-item {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+        
+        #sidebar-wrapper .list-group-item:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        #sidebar-wrapper .list-group-item.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid white;
+        }
+        
+        #sidebar-wrapper .list-group-item i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Contenido principal */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            width: calc(100% - var(--sidebar-width));
+        }
+        
+        /* Tarjeta de perfil */
+        .profile-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .profile-pic {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            margin-right: 20px;
+        }
+        
+        .profile-info h2 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .date {
+            display: flex;
+            align-items: center;
+            color: #777;
+            font-size: 14px;
+        }
+        
+        .date-icon {
+            margin-right: 5px;
+        }
+        
+        /* Navegación horizontal */
+        .navigation {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e6ee;
+            background-color: white;
+            border-radius: 15px 15px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .nav-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            flex: 1;
+            border-bottom: 3px solid transparent;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-item.active {
+            border-bottom: 3px solid #00bcd4;
+            font-weight: bold;
+            background-color: #f0f8ff;
+        }
+        
+        .nav-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Secciones de contenido */
+        .section-container {
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 0 0 15px 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .form-column {
+            flex: 1;
+            padding: 0 50px;
+            min-width: 800px;
+        }
+        
+        .section-header {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-label {
+            font-size: 13px;
+            width: 40%;
+            flex-shrink: 0;
+        }
+        
+        .form-input {
+            width: 60%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        
+        /* Botones de acción */
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .save-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .cancel-btn {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        /* Logo */
+        .logo-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 120px;
+            margin-top: 20px;
+        }
+        
+        .logo-text {
+            font-size: 36px;
+            font-weight: bold;
+            color: #e0e6ee;
+            letter-spacing: 2px;
+        }
+        
+        /* Radio buttons */
+        .radio-group {
+            margin-bottom: 15px;
+        }
+        
+        .radio-group label {
+            margin-right: 15px;
+        }
+        
+        /* Document links */
+        .view-document {
+            display: inline-block;
+            margin-left: 10px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .document-preview {
+            margin-top: 10px;
+            display: none;
+        }
+        
+        /* Botón de volver a la lista */
+        .back-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: -var(--sidebar-width);
+            }
+            
+            .main-content {
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            #sidebar-wrapper.active {
+                margin-left: 0;
+            }
+            
+            .main-content.active {
+                margin-left: var(--sidebar-width);
+                width: calc(100% - var(--sidebar-width));
+            }
+        }
+        .profile-pic {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #4e73df;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin-right: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-pic .upload-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px 0;
+    text-align: center;
+    color: white;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    opacity: 0;
+}
+
+.profile-pic:hover .upload-overlay {
+    opacity: 1;
+}
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper">
+        <div class="sidebar-heading">
+            <i class="fas fa-heartbeat"></i> BabyChat
+        </div>
+        <div class="list-group">
+            <a href="/listapersonas" class="list-group-item active">
+                <i class="fas fa-user-md"></i> Pacientes
+            </a>
+            <a href="/estadisticas" class="list-group-item">
+                <i class="fas fa-chart-line"></i> Estadísticas
+            </a>
+            <a href="/configuracion" class="list-group-item">
+                <i class="fas fa-cog"></i> Configuración
+            </a>
+            <a href="/logout" class="list-group-item">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+    
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <!-- Botón de volver -->
+        <a href="/listapersonas" class="back-btn">← Volver a la lista</a>
+
+        <!-- Tarjeta de perfil -->
+        <div class="profile-card">
+            <div class="profile-pic">
+            $for id, paciente in datos.items():
+                $if paciente.get('foto_perfil'):
+                    <img src="$paciente.get('foto_perfil')" alt="Foto de perfil del paciente">
+                    <label for="foto-input-paciente" class="upload-overlay">
+                        <i class="fas fa-camera me-1"></i>Cambiar
+                    </label>
+                $else:
+                    <i class="fas fa-baby"></i>
+  
+                    <label for="foto-input-paciente" class="upload-overlay">
+                        <i class="fas fa-camera me-1"></i>Cambiar
+                    </label>
+            </div>
+            $for id, paciente in datos.items():
+                <form action="/actualizar_foto_paciente" method="POST" enctype="multipart/form-data">
+                    <input type="hidden"  value="$id" name="paciente_id" id="paciente_id">
+                    <input type="file" name="foto" id="foto-input-paciente" style="display:none;" accept="image/*">
+                </form>
+            <div class="profile-info">
+                <h2>
+                
+                </h2>
+                <div class="date">
+                    $for id, paciente in datos.items():
+                    <span class="date-icon">📅 $paciente.get('nombre', 'N/A') $paciente.get('apellido1', '') $paciente.get('apellido2', '')</span>
+                    <span>                        
+                    </span>
+                </div>
+                <div class="date">
+                    <span class="date-icon">⏱️</span>
+                    <span>Última visita: $paciente.get('ultima_visita', 'Ultima visita no registrada')</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navegación horizontal -->
+        <div class="navigation">
+            <div class="nav-item active" id="tab-ficha">Ficha médica básica</div>
+            <div class="nav-item" id="tab-antecedentes">Antecedentes</div>
+            <div class="nav-item" id="tab-documentacion">Documentación</div>
+        </div>
+        
+        <!-- Sección: Ficha médica básica -->
+        <div class="section-container" id="seccion-ficha">
+            <form method="post" action="">
+                <div class="form-row">
+                    <div class="form-column">
+                        <h3 class="section-header">Datos de Identificación</h3>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Nombre</div>
+                            <input type="text" class="form-input" value="$paciente.get('nombre', 'N/A')" name="nombre">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Primer apellido</div>
+                            <input type="text" class="form-input"  value="$paciente.get('primer_apellido', 'N/A')" name="apellido1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Segundo apellido</div>
+                            <input type="text" class="form-input" value="$paciente.get('segundo_apellido', 'N/A')" name="apellido2">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Fecha de nacimiento</div>
+                            <input type="text" class="form-input"  value="$paciente.get('fecha_nacimiento', 'N/A')" name="fecha_nacimiento">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Edad</div>
+                            <input type="text" class="form-input" value="$paciente.get('edad', 'N/A')" name="edad" >
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Género</div>
+                            <input type="text" class="form-input" value="$paciente.get('genero', 'N/A')" name="genero">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">CURP</div>
+                            <input type="text" class="form-input"  value="$paciente.get('curp', 'N/A')" name="curp">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Nombre de la madre</div>
+                            <input type="text" class="form-input" value="$paciente.get('nombre_madre', 'N/A')" name="nombre_madre">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Nombre del padre o tutor</div>
+                            <input type="text" class="form-input" value="$paciente.get('nombre_padre', 'N/A')" name="nombre_padre">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Teléfono de contacto</div>
+                            <input type="text" class="form-input" value="$paciente.get('telefono', 'N/A')" name="telefono">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Dirección</div>
+                            <input type="text" class="form-input" value="$paciente.get('direccion', 'N/A')" name="direccion">
+                        </div>
+                    </div>
+                    
+                    <div class="form-column">
+                        <h3 class="section-header">Datos Médicos Básicos</h3>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Peso actual</div>
+                            <input type="text" class="form-input" placeholder="Kg" value="$paciente.get('peso', 'N/A')" name="peso">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Talla actual</div>
+                            <input type="text" class="form-input" placeholder="cm" value="$paciente.get('talla', 'N/A')" name="talla">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Perímetro cefálico</div>
+                            <input type="text" class="form-input" placeholder="cm" value="$paciente.get('perimetro_cefalico', 'N/A')" name="perimetro_cefalico">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">Grupo sanguíneo</div>
+                            <input type="text" class="form-input" value="$paciente.get('grupo_sanguineo', 'N/A')" name="grupo_sanguineo">
+                        </div>
+                        
+                        <!-- Campo oculto para almacenar el pediatra asignado -->
+                        <input type="hidden" name="pediatra">
+                        
+                        <div class="logo-box">
+                            <div class="logo-text">BabyChat</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Botones de acción para ficha médica -->
+                <div class="actions">
+                    <button type="submit" class="action-btn save-btn">Guardar cambios</button>
+                    <button type="button" class="action-btn cancel-btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Sección: Antecedentes -->
+        <div class="section-container" id="seccion-antecedentes" style="display: none;">
+            <form method="post" action="">
+                <div class="form-row">
+                    <div class="form-column">
+                        <h3 class="section-header">Antecedentes neonatales</h3>
+                        <label>
+                            <input type="radio" name="antecedente_neonatal" 
+                                   {{ 'checked' if paciente.get('antecedente_neonatal') == 'si' else '' }}>
+                            Sí
+                        </label>
+                        <label>
+                            <input type="radio" name="antecedente_neonatal"
+                                   {{ 'checked' if paciente.get('antecedente_neonatal') == 'no' else '' }}>
+                            No
+                        </label>
+                        
+                        <h3 class="section-header">Edad neonatal</h3>
+                        <div class="form-group">
+                            <div class="form-label">Semanas</div>
+                            <input type="number" value="$paciente.get('edad_neonatal_semanas', 'N/A')" class="form-input" name="edad_neonatal_semanas" min="0">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Días</div>
+                            <input type="number" value="$paciente.get('edad_neonatal_dias', 'N/A')" class="form-input" name="edad_neonatal_dias" min="0">
+                        </div>
+                        
+                        <h3 class="section-header">Datos antropométricos</h3>
+                        <div class="form-group">
+                            <div class="form-label">Peso</div>
+                            <input type="number" value="$paciente.get('peso_datos', 'N/A')" class="form-input" name="peso_datos" step="0.01" min="0">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Talla</div>
+                            <input type="number"  value="$paciente.get('talla_datos', 'N/A')" class="form-input" name="talla_datos" step="0.01" min="0">
+                        </div>
+                        
+                        <h3 class="section-header">Antecedentes familiares patológicos</h3>
+                            <div class="radio-group">
+                                <label>Patologías</label>
+                                <label>
+                                    <input type="radio" name="patologias" value="si"
+                                        $if paciente.get('patologias') == 'si': checked>
+                                    Sí
+                                </label>
+                                <label>
+                                    <input type="radio" name="patologias" value="no"
+                                        $if paciente.get('patologias') == 'no': checked>
+                                    No
+                                </label>
+                            </div
+                                                    
+                        <h3 class="section-header">Datos de la Madre</h3>
+                        <div class="form-group">
+                            <div class="form-label">Gestas:</div>
+                            <input type="number" value="$paciente.get('gestas', 'N/A')" class="form-input" name="gestas" min="0">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Abortos:</div>
+                            <input type="number" value="$paciente.get('abortos', 'N/A')" class="form-input" name="abortos" min="0">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Partos:</div>
+                            <input type="number"  value="$paciente.get('partos', 'N/A')" class="form-input" name="partos" min="0">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Cesáreas:</div>
+                            <input type="number" value="$paciente.get('cesareas', 'N/A')" class="form-input" name="cesareas" min="0">
+                        </div>
+                        
+                        <div class="radio-group">
+                            <h3>Condición de Riesgo</h3>
+                            <label>
+                                <input type="radio" name="normal" 
+                                       {% if paciente.get('normal', '') == 'normal' %}checked{% endif %}>
+                                Normal
+                            </label>
+                            <label>
+                                <input type="radio" name="riesgo" 
+                                       {% if paciente.get('riesgo', '') == 'riesgo' %}checked{% endif %}>
+                                Riesgo
+                            </label>
+                            <label>
+                                <input type="radio" name="alto_riesgo" 
+                                       {% if paciente.get('alto_riesgo', '') == 'alto_riesgo' %}checked{% endif %}>
+                                Alto Riesgo
+                            </label>
+                        </div>
+                        
+                        <h3 class="section-header">Terminación del Parto</h3>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="espontaneo" 
+                                       {% if paciente.get('espontaneo', '') == 'espontaneo' %}checked{% endif %}>
+                                Espontáneo
+                            </label>
+                            <label>
+                                <input type="radio" name="intraoperatoria" 
+                                       {% if paciente.get('intraoperatoria', '') == 'intraoperatoria' %}checked{% endif %}>
+                                Intraoperatoria
+                            </label>
+                            <label>
+                                <input type="radio" name="electiva" 
+                                       {% if paciente.get('electiva', '') == 'electiva' %}checked{% endif %}>
+                                Electiva
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Botones de acción para antecedentes -->
+                <div class="actions">
+                    <button type="submit" class="action-btn save-btn">Guardar antecedentes</button>
+                    <button type="button" class="action-btn cancel-btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Sección: Documentación -->
+         
+        $# Usar una variable de iteración más segura
+        $for paciente_id, paciente in datos.items():
+            <!-- Sección: Documentación -->
+            <div class="section-container" id="seccion-documentacion" style="display: none;">
+                <h3 class="section-header">Documentación</h3>
+                <form method="post" action="" enctype="multipart/form-data" id="documentos-form">
+                    <div class="form-row">
+                        <div class="form-column">
+                            $# Carnet de vacunación
+                            <div class="form-group">
+                                <div class="form-label">Carnet de vacunación</div>
+                                <input type="file" class="form-input" name="carnet_vacunacion" id="carnet_vacunacion">
+                                $if 'documentos' in paciente and 'carnet_vacunacion' in paciente['documentos']:
+                                    <div class="documento-existente">
+                                        <span class="documento-icon">📄</span>
+                                        <a href="$paciente['documentos']['carnet_vacunacion']" target="_blank" class="view-document">Ver documento</a>
+                                    </div>
+                                $else:
+                                    <div class="documento-vacio">No hay documento subido</div>
+                            </div>
+        
+                            $# Resultados de laboratorio
+                            <div class="form-group">
+                                <div class="form-label">Resultados de laboratorio</div>
+                                <input type="file" class="form-input" name="resultados_laboratorio" id="resultados_laboratorio">
+                                $if 'documentos' in paciente and 'resultados_laboratorio' in paciente['documentos']:
+                                    <div class="documento-existente">
+                                        <span class="documento-icon">📄</span>
+                                        <a href="$paciente['documentos']['resultados_laboratorio']" target="_blank" class="view-document">Ver documento</a>
+                                    </div>
+                                $else:
+                                    <div class="documento-vacio">No hay documento subido</div>
+                            </div>
+        
+                            $# Recetas médicas
+                            <div class="form-group">
+                                <div class="form-label">Recetas médicas</div>
+                                <input type="file" class="form-input" name="recetas_medicas" id="recetas_medicas">
+                                $if 'documentos' in paciente and 'recetas_medicas' in paciente['documentos']:
+                                    <div class="documento-existente">
+                                        <span class="documento-icon">📄</span>
+                                        <a href="$paciente['documentos']['recetas_medicas']" target="_blank" class="view-document">Ver documento</a>
+                                    </div>
+                                $else:
+                                    <div class="documento-vacio">No hay documento subido</div>
+                            </div>
+        
+                            $# Otros documentos
+                            <div class="form-group">
+                                <div class="form-label">Otros documentos</div>
+                                <input type="file" class="form-input" name="otros_documentos" id="otros_documentos">
+                                $if 'documentos' in paciente and 'otros_documentos' in paciente['documentos']:
+                                    <div class="documento-existente">
+                                        <span class="documento-icon">📄</span>
+                                        <a href="$paciente['documentos']['otros_documentos']" target="_blank" class="view-document">Ver documento</a>
+                                    </div>
+                                $else:
+                                    <div class="documento-vacio">No hay documento subido</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button type="submit" class="action-btn save-btn">Guardar documentos</button>
+                        <button type="button" class="action-btn delete-btn">Eliminar paciente</button>
+                    </div>
+                </form>
+            </div>
+        
+        
+        $# Fin del bucle de pacientes
+
+
+    </div>
+    
+    <!-- Script para la navegación entre pestañas -->
+    <script>
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Referencias a los elementos de las pestañas
+            const tabFicha = document.getElementById('tab-ficha');
+            const tabAntecedentes = document.getElementById('tab-antecedentes');
+            const tabDocumentacion = document.getElementById('tab-documentacion');
+            
+            // Referencias a las secciones
+            const seccionFicha = document.getElementById('seccion-ficha');
+            const seccionAntecedentes = document.getElementById('seccion-antecedentes');
+            const seccionDocumentacion = document.getElementById('seccion-documentacion');
+            
+            // Función para mostrar una sección y ocultar las demás
+            function mostrarSeccion(seccion) {
+                seccionFicha.style.display = 'none';
+                seccionAntecedentes.style.display = 'none';
+                seccionDocumentacion.style.display = 'none';
+                
+                // Quitar la clase active de todas las pestañas
+                tabFicha.classList.remove('active');
+                tabAntecedentes.classList.remove('active');
+                tabDocumentacion.classList.remove('active');
+                
+                // Mostrar la sección seleccionada
+                seccion.style.display = 'block';
+            }
+            
+            // Eventos de clic para las pestañas
+            tabFicha.addEventListener('click', function() {
+                mostrarSeccion(seccionFicha);
+                tabFicha.classList.add('active');
+            });
+            
+            tabAntecedentes.addEventListener('click', function() {
+                mostrarSeccion(seccionAntecedentes);
+                tabAntecedentes.classList.add('active');
+            });
+            
+            tabDocumentacion.addEventListener('click', function() {
+                mostrarSeccion(seccionDocumentacion);
+                tabDocumentacion.classList.add('active');
+            });
+            
+            // Por defecto, mostrar la primera pestaña
+            mostrarSeccion(seccionFicha);
+            tabFicha.classList.add('active');
+            
+            // Toggle sidebar en móvil
+            const sidebar = document.getElementById('sidebar-wrapper');
+            const content = document.querySelector('.main-content');
+            
+            // Agregar un botón hamburguesa para móviles
+            const hamburgerBtn = document.createElement('button');
+            hamburgerBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            hamburgerBtn.classList.add('hamburger-btn');
+            hamburgerBtn.style.position = 'fixed';
+            hamburgerBtn.style.top = '10px';
+            hamburgerBtn.style.left = '10px';
+            hamburgerBtn.style.zIndex = '1000';
+            hamburgerBtn.style.display = 'none';
+            hamburgerBtn.style.padding = '5px 10px';
+            hamburgerBtn.style.background = '#4e73df';
+            hamburgerBtn.style.color = 'white';
+            hamburgerBtn.style.border = 'none';
+            hamburgerBtn.style.borderRadius = '5px';
+            
+            document.body.appendChild(hamburgerBtn);
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 768) {
+                    hamburgerBtn.style.display = 'block';
+                } else {
+                    hamburgerBtn.style.display = 'none';
+                }
+            });
+            
+            // Ejecutar una vez al cargar para configurar correctamente
+            if (window.innerWidth <= 768) {
+                hamburgerBtn.style.display = 'block';
+            }
+            
+            hamburgerBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                content.classList.toggle('active');
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+    const fotoInput = document.getElementById('foto-input');
+    const fotoInputPaciente = document.getElementById('foto-input-paciente');
+    
+    
+    
+    if (fotoInputPaciente) {
+        fotoInputPaciente.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                // Copiar el archivo seleccionado al input principal
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(this.files[0]);
+                fotoInputPaciente.files = dataTransfer.files;
+                
+                // Enviar el formulario automáticamente
+                fotoInputPaciente.closest('form').submit();
+            }
+        });
+    }
+});
+    </script>
+</body>
+</html>
