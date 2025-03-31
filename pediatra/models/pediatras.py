@@ -247,28 +247,34 @@ class Personas:
 
 
     def obtener_pediatra(self, correo):
-
         try:
             correo_key = correo.replace(".", ",")
-            datos = self.db.child("usuarios").child(correo_key).get()
-
-            if datos.val() and datos.val().get("rol") == "pediatra":
-                return datos.val()
+            usuarios = self.db.child("usuarios").get()
+            
+            if usuarios.each():
+                for usuario in usuarios.each():
+                    datos = usuario.val()
+                    if datos.get("correo") == correo and datos.get("rol") == "pedia":
+                        return datos
+            
             return None
         except Exception as e:
             print(f"Error al obtener pediatra: {str(e)}")
             return None
 
-
     def actualizar_pediatra(self, correo, datos):
         try:
-            # En Firebase, el punto (.) no está permitido en las claves, así que lo reemplazamos por coma (,)
             correo_key = correo.replace(".", ",")
+            usuarios = self.db.child("usuarios").get()
             
-            # En Firebase, podemos actualizar solo los campos específicos
-            self.db.child("usuarios").child(correo_key).update(datos)
+            if usuarios.each():
+                for usuario in usuarios.each():
+                    if usuario.val().get("correo") == correo and usuario.val().get("rol") == "pedia":
+                        user_id = usuario.key()
+                        self.db.child("usuarios").child(user_id).update(datos)
+                        return True
             
-            return True
+            return False
         except Exception as e:
             print(f"Error al actualizar pediatra: {str(e)}")
             return False

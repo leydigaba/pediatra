@@ -1,4 +1,4 @@
-$def with (pacientes)
+$def with (datos)
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -336,7 +336,8 @@ $def with (pacientes)
                             </tr>
                         </thead>
                         <tbody>
-                            $for paciente in pacientes:
+                            $if datos:
+                                $for id, paciente in datos.items():
                                     <tr>
                                         <td>
                                             $if paciente.get('genero', '').lower() == 'femenino':
@@ -344,14 +345,14 @@ $def with (pacientes)
                                                     <span class="badge bg-soft-pink text-pink me-2 p-2 rounded-circle">
                                                         <i class="fas fa-female"></i>
                                                     </span>
-                                                    $paciente.get('nombre', 'N/A') $paciente.get('primer_apellido', '') $paciente.get('segundo_apellido', '')
+                                                    $paciente.get('nombre', 'N/A') $paciente.get('apellido1', '') $paciente.get('apellido2', '')
                                                 </span>
                                             $else:
                                                 <span class="d-flex align-items-center">
                                                     <span class="badge bg-soft-primary text-primary me-2 p-2 rounded-circle">
                                                         <i class="fas fa-male"></i>
                                                     </span>
-                                                    $paciente.get('nombre', 'N/A') $paciente.get('primer_apellido', '') $paciente.get('segundo_apellido', '')
+                                                    $paciente.get('nombre', 'N/A') $paciente.get('apellido1', '') $paciente.get('apellido2', '')
                                                 </span>
                                         </td>
                                         <td>$paciente.get('edad', 'N/A')</td>
@@ -388,13 +389,13 @@ $def with (pacientes)
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div>
                         <span class="text-muted">
-                            $if pacientes (pacientes):
-                                Mostrando ${len(pacientes)} paciente(s)
+                            $if datos:
+                                Mostrando ${len(datos)} paciente(s)
                             $else:
                                 No hay pacientes registrados
                         </span>
                     </div>
-                    
+                    $if datos and len(datos) > 10:
                         <nav>
                             <ul class="pagination">
                                 <li class="page-item disabled">
