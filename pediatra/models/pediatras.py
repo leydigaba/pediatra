@@ -80,59 +80,73 @@ class Personas:
     def __init__(self):
         self.db = db 
 
-    def lista_pacientes(self, correo_pediatra):
-        try:
-            usuarios = self.db.child("usuarios").get().val()
-            print("📂 Datos crudos desde Firebase:", json.dumps(usuarios, indent=2))
 
-            # Verificar si el pediatra está en la base de datos
+    def lista_pacientes(self, correo_pediatra=None):
+        """
+        Método para listar pacientes (bebés) vinculados a un pediatra
+        """
+        try:
+            if not correo_pediatra:
+                print("❌ Error: Se requiere el correo del pediatra.")
+                return "Se requiere el correo del pediatra."
+            
+            # Obtener todos los usuarios de la base de datos
+            usuarios = self.db.child("usuarios").get().val()
+            if not usuarios:
+                print("❌ Error: No hay usuarios en la base de datos.")
+                return "No hay usuarios en la base de datos."
+            
+            print(f"🗂️ Usuarios en la base de datos encontrados")
+
+            # Buscar al pediatra en la base de datos
             pediatra_id = None
+            pediatra_data = None
+            
+            print(f"📧 Buscando pediatra con correo: {correo_pediatra}")
+            
             for user_id, datos in usuarios.items():
                 if datos.get("correo", "").strip().lower() == correo_pediatra.strip().lower() and datos.get("rol") == "pedia":
                     print(f"✅ Pediatra encontrado: {user_id}")
                     pediatra_id = user_id
-                    break  
+                    pediatra_data = datos
+                    break
             
-            if not pediatra_id:
+            if not pediatra_id or not pediatra_data:
                 print("❌ Error: No se encontró el pediatra en la base de datos.")
                 return "Error: No se encontró el pediatra en la base de datos."
 
-            # Buscar bebés vinculados a este pediatra
-            pacientes = {}
-            for padre_id, datos in usuarios.items():
-                if datos.get("rol") == "padre" and "bebes" in datos:
-                    bebes = datos["bebes"]
-                    for bebe_id, bebe_info in bebes.items():
-                        # Comprobamos si el pediatra está vinculado al bebé
-                        if pediatra_id in usuarios and "bebesvinculados" in usuarios[pediatra_id]:
-                            if bebe_id in usuarios[pediatra_id]["bebesvinculados"]:
-                                paciente = {
-                                    "id": bebe_id,
-                                    "nombres": bebe_info.get("nombres", "Desconocido"),
-                                    "apodo": bebe_info.get("apodo", ""),
-                                    "edad": bebe_info.get("nacimiento", "Fecha no registrada"),
-                                    "alergias": bebe_info.get("alergias", "Ninguna"),
-                                    "fotoperfil": bebe_info.get("fotoperfil", ""),
-                                    "padre": {
-                                        "id": padre_id,
-                                        "nombre": datos.get("nombres", "Desconocido"),
-                                        "correo": datos.get("email", ""),
-                                        "fotoperfil": datos.get("fotoperfil", ""),
-                                    }
-                                }
-                                pacientes[bebe_id] = paciente
+            # Obtener bebés vinculados al pediatra
+            bebes_vinculados = pediatra_data.get("bebesvinculados", {})
+            
+            print(f"👶 Bebés vinculados encontrados: {bebes_vinculados}")
 
-            if not pacientes:
+            if not bebes_vinculados:
                 print("⚠️ No hay bebés vinculados a este pediatra.")
-                return "No hay bebés vinculados a este pediatra."
+                return []  # Retorna una lista vacía si no hay bebés vinculados.
 
+            pacientes = []
+            for bebe_id, bebe_info in bebes_vinculados.items():
+                paciente = {
+                    "ID": bebe_id,
+                    "Nombre": bebe_info.get("nombre", "Desconocido"),
+                    "Apellido(s)": f"{bebe_info.get('primer_apellido', '')} {bebe_info.get('segundo_apellido', '')}",
+                    "Edad": bebe_info.get("edad", "N/A"),
+                    "Género": bebe_info.get("genero", "N/A"),
+                    "Dirección": bebe_info.get("direccion", "Desconocida"),
+                    "Teléfono": bebe_info.get("telefono", "Desconocido"),
+                    "Nombre madre": bebe_info.get("nombre_madre", "Desconocido"),
+                    "Nombre padre": bebe_info.get("nombre_padre", "Desconocido"),
+                }
+                pacientes.append(paciente)
+
+            print(f"📊 Total de pacientes encontrados: {len(pacientes)}")
             return pacientes
+        
         except Exception as e:
             print(f"❌ Error en lista_pacientes: {str(e)}")
-            return f"Error en lista_pacientes: {str(e)}"
+            return []
 
-
-    
+            
     def agregar_persona(self, nombre, edad, rol, email, bebe_id=None):
         """Método para agregar personas (padres, pediatras, etc.) con relación a un bebé"""
         try:
@@ -159,28 +173,6 @@ class Personas:
             return False
 
 
-    def lista_pacientes(self, pediatra_email=None):
-        """Método para listar pacientes (bebés), filtrando por pediatra si es necesario"""
-        try:
-            datos = self.db.child("usuarios").get()
-            todos_usuarios = datos.val() if datos.val() else {}
-
-            pacientes_filtrados = {}
-
-            for id_usuario, usuario in todos_usuarios.items():
-                if usuario.get("rol") == "pediatra" and pediatra_email == usuario.get("email"):
-                    # Obtener los bebés vinculados al pediatra
-                    bebes_vinculados = usuario.get("bebesvinculados", {})
-                    for bebe_id in bebes_vinculados:
-                        # Buscar bebé en la base de datos
-                        bebe = self.db.child("usuarios").child(bebe_id).get()
-                        if bebe.val():
-                            pacientes_filtrados[bebe_id] = bebe.val()
-
-            return pacientes_filtrados
-        except Exception as e:
-            print(f"Error al listar pacientes: {str(e)}")
-            return {}
 
 
     def lista_pacientes_por_id_y_pediatra(self, paciente_id=None, pediatra_email=None):
@@ -206,6 +198,33 @@ class Personas:
             print(f"Error al listar pacientes: {str(e)}")
             return {}
 
+    def vincular_bebe_a_pediatra(self, pediatra_id, bebe_id):
+
+        try:
+            # Verificar si el pediatra existe
+            pediatra = self.db.child("usuarios").child(pediatra_id).get().val()
+            if not pediatra or pediatra.get("rol") != "pedia":
+                print(f"❌ Error: El usuario {pediatra_id} no es un pediatra o no existe.")
+                return False
+                
+            # Verificar si el bebé existe
+            bebe = self.db.child("usuarios").child(bebe_id).get().val()
+            if not bebe:
+                print(f"❌ Error: El bebé {bebe_id} no existe.")
+                return False
+                
+            # Agregar el bebé a la lista de bebés vinculados del pediatra
+            self.db.child("usuarios").child(pediatra_id).child("bebesvinculados").update({
+                bebe_id: True
+            })
+            
+            print(f"✅ Bebé {bebe_id} vinculado exitosamente al pediatra {pediatra_id}")
+            return True
+        except Exception as e:
+            print(f"❌ Error al vincular bebé a pediatra: {str(e)}")
+            return False
+
+            
 
     def agregar_paciente(self, datos_paciente, pediatra_email=None):
         """Método para agregar un paciente (bebé) con datos completos y asociarlo a un pediatra"""

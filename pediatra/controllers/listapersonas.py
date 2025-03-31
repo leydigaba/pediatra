@@ -5,7 +5,7 @@ render = web.template.render("views/")
 class ListaPersonas: 
     def GET(self):
         try:
-            session = web.ctx.session  # Verificamos la sesión
+            session = web.ctx.session  
             if not session.get('usuario'):
                 print("🚫 No hay usuario en sesión. Redirigiendo a /iniciosesion...")
                 raise web.seeother('/iniciosesion')
@@ -21,9 +21,14 @@ class ListaPersonas:
             p = Personas()
             pacientes = p.lista_pacientes(correo_pediatra)
             
+           
+            if isinstance(pacientes):
+                return render.lista_personas([])
+                
             return render.lista_personas(pacientes)
+            
         except web.seeother as redireccion:
             raise redireccion
         except Exception as error:
-            print(f"❌ ERROR: {str(error)}")
-            return "Ocurrió un error, revisa la consola."
+            print(f"❌ ERROR en ListaPersonas.GET: {(error)}")
+            return render.lista_personas([])
