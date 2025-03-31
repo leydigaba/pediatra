@@ -37,6 +37,7 @@ urls = (
     '/detalle_paciente/(.+)/actualizar_foto', 'ActualizarFotoBebe',
     '/actualizar_foto_paciente', 'ActualizarFotoBebe'
 
+
 )
 
 app = web.application(urls, globals())

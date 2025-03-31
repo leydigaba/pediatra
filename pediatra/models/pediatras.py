@@ -476,3 +476,28 @@ class Personas:
         except Exception as e:
             print(f"Error al subir documentos: {str(e)}")
             return None
+
+class BebeModel:
+    def __init__(self, db):
+        self.db = db
+
+    def eliminar_bebe(self, pediatra_id, bebe_id):
+        try:
+            # Verificar si el pediatra tiene vinculado al bebé
+            bebes_vinculados = self.db.child("usuarios").child(pediatra_id).child("bebesvinculados").get().val()
+
+            if not bebes_vinculados or bebe_id not in bebes_vinculados:
+                print("❌ Error: El bebé no está vinculado a este pediatra.")
+                return False
+
+            # Eliminar el bebé de los bebés vinculados al pediatra
+            self.db.child("usuarios").child(pediatra_id).child("bebesvinculados").child(bebe_id).remove()
+
+            # Eliminar el registro del bebé en la base de datos
+            self.db.child("bebes").child(bebe_id).remove()
+
+            print(f"✅ Bebé {bebe_id} eliminado correctamente.")
+            return True
+        except Exception as e:
+            print(f"❌ Error al eliminar bebé: {str(e)}")
+            return False
