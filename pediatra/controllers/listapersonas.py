@@ -25,7 +25,7 @@ class ListaPersonas:
             pacientes_formateados = []
             for p in pacientes:
                 pacientes_formateados.append({
-                   
+                    'id':p['ID'],
                     'nombre': p['Nombre'],
                     'primer_apellido': p['Apellido(s)'].split()[0] if p['Apellido(s)'] and ' ' in p['Apellido(s)'] else p['Apellido(s)'],
                     'segundo_apellido': p['Apellido(s)'].split()[1] if p['Apellido(s)'] and ' ' in p['Apellido(s)'] else '',

@@ -232,7 +232,7 @@ $def with (pacientes)
                 <a href="/logout" class="list-group-item">
                     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </a>
-            </div>
+            </div>
         </div>
         
         <!-- Contenido principal -->
@@ -363,20 +363,16 @@ $def with (pacientes)
                                                 <span class="status-badge status-inactivo">Inactivo</span>
                                             $else:
                                                 <span class="status-badge status-pendiente">Pendiente</span>
-                                        </td>
+                                        </td> 
                                         <td>
                                             <a href="/usuario/$paciente.get('id', 'N/A')" class="btn btn-sm btn-primary btn-action">
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
                                             
+                                           
                                             <a href="/credencial/$paciente.get('id', 'N/A')" class="btn btn-sm btn-success">
                                                 <i class="fas fa-id-card"></i> Ver Credencial
                                             </a>
-                                            
-                                            <button onclick="confirmarEliminacion('{{ paciente.id }}')" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i> Eliminar
-                                            </button>
-                                            
                                             
                                         </td>
                                     </tr>
@@ -426,61 +422,30 @@ $def with (pacientes)
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-    // Agregar esto al JavaScript existente
-    const btnsEliminar = document.querySelectorAll('.btn-eliminar');
-    
-    btnsEliminar.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const pacienteId = this.getAttribute('data-paciente-id');
-            confirmarEliminacion(pacienteId);
-        });
-    });
-    
-    function confirmarEliminacion(pacienteId) {
-    const confirmar = confirm("¿Estás seguro de que deseas eliminar este paciente?");
-    if (confirmar) {
-        window.location.href = "/eliminar_paciente/" + pacienteId;
-    }
-}
+        console.log('Script cargado y ejecutándose');
 
-    
-    // El resto de tu código JavaScript...
-});
-        // Función para mostrar la confirmación de eliminación
-        function confirmarEliminacion(pacienteId) {
-            const confirmar = confirm("¿Estás seguro de que deseas eliminar este paciente?");
-            if (confirmar) {
-                // Redirigir a la URL de eliminación si el usuario confirma
-                window.location.href = "/eliminar_paciente/" + pacienteId;
-            }
+        const campoBusqueda = document.querySelector('.search-container input[type="text"]');
+        const botonBuscar = document.querySelector('.search-container .btn-primary');
+
+        function aplicarFiltros() {
+            const textoBusqueda = campoBusqueda ? campoBusqueda.value.toLowerCase().trim() : '';
+
+            const tablaPacientes = document.querySelectorAll('tbody tr');
+
+            tablaPacientes.forEach(fila => {
+                const nombre = fila.children[0].textContent.toLowerCase().trim();
+                fila.style.display = nombre.includes(textoBusqueda) ? '' : 'none';
+            });
         }
-        
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('Script cargado y ejecutándose');
 
-            const campoBusqueda = document.querySelector('.search-container input[type="text"]');
-            const botonBuscar = document.querySelector('.search-container .btn-primary');
+        if (campoBusqueda) {
+            campoBusqueda.addEventListener('input', aplicarFiltros);
+        }
 
-            function aplicarFiltros() {
-                const textoBusqueda = campoBusqueda ? campoBusqueda.value.toLowerCase().trim() : '';
-
-                const tablaPacientes = document.querySelectorAll('tbody tr');
-
-                tablaPacientes.forEach(fila => {
-                    const nombre = fila.children[0].textContent.toLowerCase().trim();
-                    fila.style.display = nombre.includes(textoBusqueda) ? '' : 'none';
-                });
-            }
-
-            if (campoBusqueda) {
-                campoBusqueda.addEventListener('input', aplicarFiltros);
-            }
-
-            if (botonBuscar) {
-                botonBuscar.addEventListener('click', aplicarFiltros);
-            }
-        });
-        
+        if (botonBuscar) {
+            botonBuscar.addEventListener('click', aplicarFiltros);
+        }
+    });
         document.addEventListener('DOMContentLoaded', function () {
             console.log('Script cargado y ejecutándose');
         
@@ -614,6 +579,8 @@ $def with (pacientes)
         
             console.log('Todos los eventos han sido asignados correctamente');
         });
-    </script>
+        </script>
+        
+        
 </body>
 </html>

@@ -123,24 +123,32 @@ class ActualizarFoto:
     def POST(self):
         global mensaje
         try:
+            # Verificar que haya una sesión activa
             if not hasattr(web.ctx, 'session') or not web.ctx.session.get('usuario'):
                 raise web.seeother('/iniciosesion')
             
+            # Obtener el archivo de imagen del formulario
             formulario = web.input(foto={})
             if 'foto' not in formulario or not formulario['foto'].filename:
                 mensaje = "Error: No se seleccionó ninguna imagen."
                 raise web.seeother('/configuracion')
             
-            correo_usuario = web.ctx.session.get('correo')
+            # Obtener el correo del usuario desde la sesión
+            correo_usuario = web.ctx.session.usuario.get('correo')
+            print(f"📧 Correo del usuario para actualizar foto: {correo_usuario}")
             
+            # Subir la foto usando el método de la clase Personas
             p = Personas()
-            url_foto = p.subir_foto_perfil(correo_usuario, formulario['foto'])
+            url_foto = p.subir_fotoperfil(correo_usuario, formulario['foto'])
             
             if url_foto:
-                web.ctx.session.usuario['foto_perfil'] = url_foto
+                # Actualizar la URL de la foto en la sesión
+                web.ctx.session.usuario['fotoperfil'] = url_foto
                 mensaje = "¡Foto de perfil actualizada correctamente!"
+                print(f"✅ Foto actualizada correctamente: {url_foto}")
             else:
                 mensaje = "No se pudo actualizar la foto de perfil."
+                print("❌ No se pudo actualizar la foto de perfil")
             
             raise web.seeother('/configuracion')
         

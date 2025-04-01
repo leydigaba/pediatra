@@ -25,7 +25,7 @@ urls = (
     '/iniciosesion', 'Iniciosesion',
     '/listaspersonas', 'ListaPersonas',
     '/agregar', 'AgregarPaciente',
-    '/usuario/(.+)', 'DetalleUsuario',
+    '/usuario/(.*)', 'DetalleUsuario',
     '/logout', 'Logout',
     '/estadisticas', 'EstadisticaUsuario',
     '/configuracion', 'Configuracion',
