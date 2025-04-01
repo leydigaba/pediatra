@@ -254,33 +254,76 @@ class Personas:
             print(f"Error al agregar paciente: {str(e)}")
             return False
 
-
-    def obtener_pediatra(self, correo):
-
+    def obtener_pediatra(self, email):
+        """
+        Obtiene los datos de un pediatra por su email desde Firebase
+        con debugging adicional
+        """
         try:
-            correo_key = correo.replace(".", ",")
-            datos = self.db.child("usuarios").child(correo_key).get()
-
-            if datos.val() and datos.val().get("rol") == "pediatra":
-                return datos.val()
-            return None
+            # Primero necesitamos obtener todos los usuarios
+            usuarios = self.db.child("usuarios").get()
+            
+            print(f"🔍 Buscando pediatra con correo: {email}")
+            print(f"📊 Total de usuarios encontrados: {len(list(usuarios.each())) if usuarios.each() else 0}")
+            
+            if not usuarios.each():
+                print("❌ No se encontraron usuarios en la base de datos")
+                return {"correo": email}  # Retornar al menos el correo
+            
+            # Recorrer cada usuario y mostrar detalles
+            for usuario in usuarios.each():
+                datos_usuario = usuario.val()
+                uid = usuario.key()
+                
+                # Mostrar información de cada usuario para debugging
+                print(f"👤 Usuario: {uid}")
+                print(f"📧 Correo en datos: {datos_usuario.get('correo', 'N/A')}")
+                print(f"🏥 Rol: {datos_usuario.get('rol', 'N/A')}")
+                
+                # Verificar ambos campos (correo y email) por si acaso
+                if (datos_usuario.get("correo") == email or datos_usuario.get("email") == email) and datos_usuario.get("rol") in ["pedia", "pediatra"]:
+                    print(f"✅ Pediatra encontrado: {uid}")
+                    datos_usuario["uid"] = uid
+                    return datos_usuario
+            
+            print(f"❌ No se encontró ningún pediatra con el email: {email}")
+            return {"correo": email}  # Retornar al menos el correo
+            
         except Exception as e:
-            print(f"Error al obtener pediatra: {str(e)}")
-            return None
+            print(f"❌ Error al obtener pediatra: {str(e)}")
+            return {"correo": email}  # Retornar al menos el correo en caso de error
 
+    def actualizar_pediatra(self, email, datos):
 
-    def actualizar_pediatra(self, correo, datos):
         try:
-            # En Firebase, el punto (.) no está permitido en las claves, así que lo reemplazamos por coma (,)
-            correo_key = correo.replace(".", ",")
+            # Primero encontramos el usuario/pediatra por su email
+            usuarios = self.db.child("usuarios").get()
             
-            # En Firebase, podemos actualizar solo los campos específicos
-            self.db.child("usuarios").child(correo_key).update(datos)
-            
+            if not usuarios.each():
+                print("No se encontraron usuarios en la base de datos")
+                return False
+                
+            # Buscar el usuario con el email correspondiente
+            usuario_id = None
+            for usuario in usuarios.each():
+                datos_usuario = usuario.val()
+                if datos_usuario.get("email") == email and datos_usuario.get("rol") == "pedia":
+                    usuario_id = usuario.key()
+                    break
+                    
+            if not usuario_id:
+                print(f"No se encontró ningún pediatra con el email: {email}")
+                return False
+                
+            # Actualizar los datos del pediatra usando su ID
+            self.db.child("usuarios").child(usuario_id).update(datos)
+            print(f"Pediatra actualizado con éxito: {usuario_id}")
             return True
+            
         except Exception as e:
             print(f"Error al actualizar pediatra: {str(e)}")
             return False
+
 
     def actualizar_paciente(self, paciente_id, datos_actualizar):
         try:
@@ -319,13 +362,21 @@ class Personas:
     
     def subir_foto_perfil(self, correo, archivo):
         try:
+            # Primero obtenemos el uid del pediatra
+            pediatra = self.obtener_pediatra(correo)
+            
+            if not pediatra or "uid" not in pediatra:
+                print(f"No se encontró el pediatra con correo {correo}")
+                return None
+                
+            pediatra_uid = pediatra["uid"]
+            
             # Generar un nombre de archivo único
             extension = os.path.splitext(archivo.filename)[1]
             nombre_archivo = f"{correo.replace('.', '')}{uuid.uuid4()}{extension}"
             
             # Ruta donde se guardará la foto
             ruta_local = os.path.join('static', 'uploads', 'perfiles', nombre_archivo)
-            ruta_storage = f"perfiles/{nombre_archivo}"
             
             # Asegurar que el directorio exista
             os.makedirs(os.path.dirname(ruta_local), exist_ok=True)
@@ -339,19 +390,11 @@ class Personas:
                 print(f"Error: El archivo {ruta_local} no existe")
                 return None
             
-            # Subir a Firebase Storage
-            try:
-                self.storage.child(ruta_storage).put(ruta_local)
-            except Exception as e:
-                print(f"Error al subir a Firebase Storage: {str(e)}")
-                # Continuar con la ruta local si la subida falla
-            
-            # Construir URL de la foto (usar ruta local si la subida falla)
+            # Construir URL de la foto
             url_foto = f"/static/uploads/perfiles/{nombre_archivo}"
             
             # Actualizar datos del usuario con la URL de la foto
-            correo_key = correo.replace(".", ",")
-            self.db.child("usuarios").child(correo_key).update({
+            self.db.child("usuarios").child(pediatra_uid).update({
                 "foto_perfil": url_foto
             })
             

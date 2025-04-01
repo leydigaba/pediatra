@@ -258,7 +258,7 @@ $def with (datos_pediatra, mensaje=None)
                 <form action="/actualizar_configuracion" method="POST" class="row g-3">
                     <div class="col-md-6 mb-3">
                         <label for="nombre" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="nombre" value="$datos_pediatra.get('nombre', '')" name="nombre" required>
+                        <input type="text" class="form-control" id="nombre" value="$datos_pediatra.get('nombres', '')" name="nombre" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="primer_apellido" class="form-label">Primer Apellido</label>
@@ -275,7 +275,7 @@ $def with (datos_pediatra, mensaje=None)
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="nacimiento" class="form-label">Fecha de Nacimiento</label>
-                        <input type="date" class="form-control" id="nacimiento" value="$datos_pediatra.get('nacimiento', '')" required name="nacimiento">
+                        <input type="date" class="form-control" id="nacimiento" value="$datos_pediatra.get('fecha_nacimiento', '')" required name="nacimiento">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="licencia" class="form-label">Número de Licencia Médica</label>
