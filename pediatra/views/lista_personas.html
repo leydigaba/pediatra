@@ -374,6 +374,17 @@ $def with (pacientes)
                                                 <i class="fas fa-id-card"></i> Ver Credencial
                                             </a>
                                             
+                                            <form method="POST" action="/eliminar_paciente/$paciente.get('id', 'N/A')" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                            
+                                            
+        
+                                         
+                                         
+                                            
                                         </td>
                                     </tr>
              
@@ -421,6 +432,7 @@ $def with (pacientes)
     <!-- Bootstrap JS y Popper -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+
         document.addEventListener('DOMContentLoaded', function () {
         console.log('Script cargado y ejecutándose');
 

@@ -5,14 +5,11 @@ render = web.template.render("views/", globals())
 
 class DetallePersonas:
     def GET(self, persona_id):  
-        #web.debug(f"🌟 ID recibido en la URL: {persona_id}")  # <-- Verificamos si el ID llega bien
-        
         session = web.ctx.session  
         if not session.get('usuario'):
                 print("🚫 No hay usuario en sesión. Redirigiendo a /iniciosesion...")
                 raise web.seeother('/iniciosesion')
             
-            #print(f"🔍 Sesión actual: {session.get('usuario')}")
         
         usuario = session.get('usuario')
         if usuario.get('rol') != 'pedia':
@@ -30,9 +27,8 @@ class DetallePersonas:
             datos_persona = p.obtener_bebe_por_id(persona_id, correo_pediatra)
             #web.debug(f"🔍 Datos obtenidos: {datos_persona}")  # Para verificar estructura
             print("🔍 Datos obtenidos: ", datos_persona)  # Para verificar estructura
-            # Extraemos el paciente del diccionario
             paciente = datos_persona.get(persona_id, None)
-            #web.debug(f"✅ Paciente seleccionado: {paciente}")  # Para verificar
+           
             print(f"✅ Paciente seleccionado: {paciente}")  # Para verificar
             
             if paciente:

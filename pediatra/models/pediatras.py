@@ -520,27 +520,32 @@ class Personas:
             print(f"Error al subir documentos: {str(e)}")
             return None
 
-class BebeModel:
-    def __init__(self, db):
-        self.db = db
 
-    def eliminar_bebe(self, pediatra_id, bebe_id):
+    def eliminar_paciente(self, bebe_id, pediatra_id=None):
         try:
-            # Verificar si el pediatra tiene vinculado al bebé
+            print(f"🔍 Intentando eliminar bebé: {bebe_id}")
+            
+            # Si no se proporciona pediatra_id, podrías obtenerlo de la sesión o de otro lugar
+            if not pediatra_id:
+                # pediatra_id = web.ctx.session.user_id  # Ejemplo si usas sesiones
+                pass
+            
             bebes_vinculados = self.db.child("usuarios").child(pediatra_id).child("bebesvinculados").get().val()
-
-            if not bebes_vinculados or bebe_id not in bebes_vinculados:
-                print("❌ Error: El bebé no está vinculado a este pediatra.")
+            
+            if not bebes_vinculados:
+                print("⚠️ Advertencia: No hay estructura de bebesvinculados para este pediatra")
                 return False
-
-            # Eliminar el bebé de los bebés vinculados al pediatra
+                
+            print(f"👶 Bebés vinculados encontrados: {bebes_vinculados}")
+            
+            if bebe_id not in bebes_vinculados:
+                print(f"⚠️ Error: El bebé {bebe_id} no está vinculado a este pediatra.")
+                return False
+            
             self.db.child("usuarios").child(pediatra_id).child("bebesvinculados").child(bebe_id).remove()
-
-            # Eliminar el registro del bebé en la base de datos
-            self.db.child("bebes").child(bebe_id).remove()
-
-            print(f"✅ Bebé {bebe_id} eliminado correctamente.")
+            print(f"✅ Paciente {bebe_id} eliminado correctamente de los vínculos del pediatra.")
             return True
+
         except Exception as e:
-            print(f"❌ Error al eliminar bebé: {str(e)}")
+            print(f"❌ Error al eliminar paciente: {str(e)}")
             return False

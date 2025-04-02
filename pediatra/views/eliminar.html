@@ -1,0 +1,9 @@
+$def with (bebe_id)
+
+<h2>¿Seguro que quieres eliminar al paciente con ID: $bebe_id?</h2>
+
+<form action="/eliminar_paciente/$bebe_id" method="POST">
+    <button type="submit" class="btn btn-danger">❌ Confirmar Eliminación</button>
+</form>
+
+<a href="/listaspersonas" class="btn btn-secondary">Cancelar</a>

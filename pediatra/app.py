@@ -13,8 +13,8 @@ from controllers.estadisticapersonas import EstadisticaUsuario as EstadisticaUsu
 from controllers.configuracion import Configuracion as Configuracion
 from controllers.configuracion import ActualizarConfiguracion as ActualizarConfiguracion
 from controllers.configuracion import ActualizarFoto as ActualizarFoto
-
 from controllers.ficha import DetallePersonas as DetallePersonas
+from controllers.eliminar import EliminarPaciente as EliminarPaciente
 
 web.config.debug = False  
 
@@ -35,14 +35,15 @@ urls = (
     '/credencial/(.*)', 'DetallePersonas',
     '/actualizar_foto', 'ActualizarFoto',
     '/detalle_paciente/(.+)/actualizar_foto', 'ActualizarFotoBebe',
-    '/actualizar_foto_paciente', 'ActualizarFotoBebe'
+    '/actualizar_foto_paciente', 'ActualizarFotoBebe',
+    '/eliminar_paciente/(.+)/(.+)', 'EliminarPaciente'
 
 
 )
 
 app = web.application(urls, globals())
 
-# 📌 Asegurar que la sesión esté configurada correctamente
+
 if web.config.get('_session') is None:  # Evitar que la sesión se reinicialice en cada request
     session = web.session.Session(app, web.session.DiskStore("sessions"), initializer={"usuario": None})
     web.config._session = session  # Guardar la sesión en web.config

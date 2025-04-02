@@ -18,8 +18,7 @@ class EstadisticaUsuario:
             # Filtrar pacientes por el pediatra
             pacientes = p.lista_pacientes(correo_pediatra) 
 
-            # Procesamos los datos para asegurarnos de que tengan las propiedades necesarias
-            # Transformar los datos para que coincidan con la plantilla
+            
             pacientes_formateados = []
             for p in pacientes:
                 pacientes_formateados.append({
