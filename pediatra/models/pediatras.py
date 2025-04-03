@@ -521,28 +521,54 @@ class Personas:
             return None
 
 
-    def eliminar_paciente(self, bebe_id, pediatra_id=None):
+    def eliminar_paciente(self, bebe_id, correo_pediatra):
+        """
+        Elimina un paciente (bebé) de los bebés vinculados de un pediatra
+        
+        Args:
+            bebe_id (str): ID del bebé a eliminar
+            correo_pediatra (str): Correo electrónico del pediatra
+            
+        Returns:
+            bool: True si se eliminó correctamente, False en caso contrario
+        """
         try:
-            print(f"🔍 Intentando eliminar bebé: {bebe_id}")
+            print(f"🔍 Intentando eliminar bebé: {bebe_id} para el pediatra: {correo_pediatra}")
             
-            # Si no se proporciona pediatra_id, podrías obtenerlo de la sesión o de otro lugar
-            if not pediatra_id:
-                # pediatra_id = web.ctx.session.user_id  # Ejemplo si usas sesiones
-                pass
+            # Obtener el ID del pediatra basado en su correo
+            usuarios = self.db.child("usuarios").get().val()
+            if not usuarios:
+                print("❌ Error: No hay usuarios en la base de datos.")
+                return False
             
-            bebes_vinculados = self.db.child("usuarios").child(pediatra_id).child("bebesvinculados").get().val()
+            # Buscar al pediatra por su correo
+            pediatra_uid = None
+            for uid, datos in usuarios.items():
+                if datos.get("correo") == correo_pediatra and datos.get("rol") == "pedia":
+                    print(f"✅ Pediatra encontrado con UID: {uid}")
+                    pediatra_uid = uid
+                    break
+            
+            if not pediatra_uid:
+                print(f"❌ Error: No se encontró el pediatra con correo {correo_pediatra}")
+                return False
+            
+            # Verificar si el pediatra tiene bebés vinculados
+            bebes_vinculados = self.db.child("usuarios").child(pediatra_uid).child("bebesvinculados").get().val()
             
             if not bebes_vinculados:
                 print("⚠️ Advertencia: No hay estructura de bebesvinculados para este pediatra")
                 return False
-                
+            
             print(f"👶 Bebés vinculados encontrados: {bebes_vinculados}")
             
+            # Verificar si el bebé está vinculado a este pediatra
             if bebe_id not in bebes_vinculados:
                 print(f"⚠️ Error: El bebé {bebe_id} no está vinculado a este pediatra.")
                 return False
             
-            self.db.child("usuarios").child(pediatra_id).child("bebesvinculados").child(bebe_id).remove()
+            # Eliminar el bebé de los vínculos del pediatra
+            self.db.child("usuarios").child(pediatra_uid).child("bebesvinculados").child(bebe_id).remove()
             print(f"✅ Paciente {bebe_id} eliminado correctamente de los vínculos del pediatra.")
             return True
 

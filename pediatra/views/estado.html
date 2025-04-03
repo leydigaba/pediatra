@@ -1,0 +1,151 @@
+<!-- Modifica la sección de acciones en la tabla para incluir un menú desplegable de estados -->
+<td>
+    <div class="d-flex">
+        <a href="/usuario/$paciente.get('id', 'N/A')" class="btn btn-sm btn-primary btn-action me-1">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        
+        <div class="dropdown me-1">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownEstado$paciente.get('id', 'N/A')" data-bs-toggle="dropdown" aria-expanded="false">
+                Estado
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownEstado$paciente.get('id', 'N/A')">
+                <li><a class="dropdown-item cambiar-estado" href="#" data-id="$paciente.get('id', 'N/A')" data-estado="activo">Activo</a></li>
+                <li><a class="dropdown-item cambiar-estado" href="#" data-id="$paciente.get('id', 'N/A')" data-estado="inactivo">Inactivo</a></li>
+                <li><a class="dropdown-item cambiar-estado" href="#" data-id="$paciente.get('id', 'N/A')" data-estado="pendiente">Pendiente</a></li>
+            </ul>
+        </div>
+        
+        <a href="/credencial/$paciente.get('id', 'N/A')" class="btn btn-sm btn-success me-1">
+            <i class="fas fa-id-card"></i> Ver Credencial
+        </a>
+        
+        <form method="POST" action="/eliminar_paciente/$paciente.get('id', 'N/A')" style="display: inline;">
+            <button type="submit" class="btn btn-sm btn-danger">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+        </form>
+    </div>
+</td>
+
+<!-- Añade este campo oculto para almacenar el correo del pediatra -->
+<input type="hidden" id="pediatra-email" value="$correo_pediatra">
+
+<!-- Agrega este fragmento al final del archivo, dentro de la sección script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Código existente...
+    
+    // Función para cambiar el estado del paciente
+    const botonesEstado = document.querySelectorAll('.cambiar-estado');
+    
+    botonesEstado.forEach(boton => {
+        boton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const pacienteId = this.getAttribute('data-id');
+            const nuevoEstado = this.getAttribute('data-estado');
+            // Obtener el email del pediatra desde un valor oculto en la página o desde sessionStorage
+            const pediatraEmail = document.getElementById('pediatra-email').value || sessionStorage.getItem('pediatraEmail');
+            
+            if (!pediatraEmail) {
+                console.error('Error: No se puede obtener el email del pediatra');
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            const fila = this.closest('tr');
+            const celdaEstado = fila.querySelector('td:nth-child(4)'); // Celda de estado (ajustar índice si es necesario)
+            const estadoOriginal = celdaEstado.innerHTML;
+            celdaEstado.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>';
+            
+            // Realizar la petición AJAX para actualizar el estado
+            fetch('/actualizar_estado', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: pacienteId,
+                    estado: nuevoEstado,
+                    pediatra_email: pediatraEmail // Añadido para compatibilidad con tu BD de Firebase
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el estado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Error al actualizar el estado');
+                }
+                
+                // Actualizar la interfaz con el nuevo estado
+                let badgeClass = '';
+                if (nuevoEstado === 'activo') {
+                    badgeClass = 'status-badge status-activo';
+                } else if (nuevoEstado === 'inactivo') {
+                    badgeClass = 'status-badge status-inactivo';
+                } else {
+                    badgeClass = 'status-badge status-pendiente';
+                }
+                
+                // Capitalizar la primera letra del estado
+                const estadoMostrar = nuevoEstado.charAt(0).toUpperCase() + nuevoEstado.slice(1);
+                
+                celdaEstado.innerHTML = `<span class="${badgeClass}">${estadoMostrar}</span>`;
+                
+                // Mostrar notificación de éxito
+                const notificacion = document.createElement('div');
+                notificacion.className = 'position-fixed bottom-0 end-0 p-3';
+                notificacion.style.zIndex = '5';
+                notificacion.innerHTML = `
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <strong class="me-auto">Notificación</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${data.message || 'Estado actualizado correctamente a: ' + estadoMostrar}
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notificacion);
+                
+                // Eliminar la notificación después de 3 segundos
+                setTimeout(() => {
+                    notificacion.remove();
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                celdaEstado.innerHTML = estadoOriginal;
+                
+                // Mostrar notificación de error
+                const notificacion = document.createElement('div');
+                notificacion.className = 'position-fixed bottom-0 end-0 p-3';
+                notificacion.style.zIndex = '5';
+                notificacion.innerHTML = `
+                    <div class="toast show bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header bg-danger text-white">
+                            <strong class="me-auto">Error</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${error.message || 'No se pudo actualizar el estado. Intente nuevamente.'}
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notificacion);
+                
+                // Eliminar la notificación después de 3 segundos
+                setTimeout(() => {
+                    notificacion.remove();
+                }, 3000);
+            });
+        });
+    });
+});
+</script>

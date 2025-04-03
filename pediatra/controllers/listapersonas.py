@@ -31,7 +31,7 @@ class ListaPersonas:
                     'segundo_apellido': p['Apellido(s)'].split()[1] if p['Apellido(s)'] and ' ' in p['Apellido(s)'] else '',
                     'edad': p['Edad'],
                     'genero': p['Género'].lower(),
-                    'estado': 'activo'  # Por defecto
+                    'estado': 'activo'  
                 })
                 
             return render.lista_personas(pacientes_formateados)

@@ -357,13 +357,15 @@ $def with (pacientes)
                                         <td>$paciente.get('edad', 'N/A')</td>
                                         <td>$paciente.get('genero', 'N/A')</td>
                                         <td>
-                                            $if paciente.get('estado') == 'activo':
-                                                <span class="status-badge status-activo">Activo</span>
-                                            $elif paciente.get('estado') == 'inactivo':
-                                                <span class="status-badge status-inactivo">Inactivo</span>
-                                            $else:
-                                                <span class="status-badge status-pendiente">Pendiente</span>
-                                        </td> 
+                                            <div class="form-group">
+                                                <label for="rol"></label>
+                                                <select id="rol" name="cambiar estado" required>
+                                                    <option value="padre">activo</option>
+                                                    <option value="admin">Inactivo</option>
+                                                    <option value="pedia">Pendiente</option>
+                                                </select>
+                                            </div>
+                                        </td>
                                         <td>
                                             <a href="/usuario/$paciente.get('id', 'N/A')" class="btn btn-sm btn-primary btn-action">
                                                 <i class="fas fa-edit"></i> Editar
@@ -374,16 +376,11 @@ $def with (pacientes)
                                                 <i class="fas fa-id-card"></i> Ver Credencial
                                             </a>
                                             
-                                            <form method="POST" action="/eliminar_paciente/$paciente.get('id', 'N/A')" style="display: inline;">
+                                            <a href="/eliminar_paciente/$paciente.get('id', 'N/A')" style="display: inline;">
                                                 <button type="submit" class="btn btn-sm btn-danger">
                                                     <i class="fas fa-trash"></i> Eliminar
                                                 </button>
-                                            </form>
-                                            
-                                            
-        
-                                         
-                                         
+                                            </a>
                                             
                                         </td>
                                     </tr>

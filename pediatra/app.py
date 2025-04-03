@@ -15,10 +15,10 @@ from controllers.configuracion import ActualizarConfiguracion as ActualizarConfi
 from controllers.configuracion import ActualizarFoto as ActualizarFoto
 from controllers.ficha import DetallePersonas as DetallePersonas
 from controllers.eliminar import EliminarPaciente as EliminarPaciente
-
+from controllers.estado import ActualizarEstado as ActualizarEstado
 web.config.debug = False  
 
-# Definir rutas
+
 urls = (
     '/', 'Index',
     '/registro', 'Registro',
@@ -36,9 +36,8 @@ urls = (
     '/actualizar_foto', 'ActualizarFoto',
     '/detalle_paciente/(.+)/actualizar_foto', 'ActualizarFotoBebe',
     '/actualizar_foto_paciente', 'ActualizarFotoBebe',
-    '/eliminar_paciente/(.+)/(.+)', 'EliminarPaciente'
-
-
+    '/eliminar_paciente/(.+)', 'EliminarPaciente',
+    '/actualizar_estado', 'ActualizarEstado'
 )
 
 app = web.application(urls, globals())
